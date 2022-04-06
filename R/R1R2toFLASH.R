@@ -1,31 +1,39 @@
-
-min.len <- 200   # Longitud mínima per considerar una seqüència
-min.ov <- 20     # Mínim solapament (en nt) entre R1 and R2
-max.ov <- 300    # Màxim solapament (en nt) entre R1 and R2
-err.lv <- 0.10   # Fracció de diferències acceptades en el solapament
-flash <- "C:/FLASH/flash.exe" # Carpeta on es troba l'executable FLASH.
-
-# Indicador de les variables min, max i error level
-flash.opts <- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
-
-### Chunck size to be used by FastqStreamer() --> Buscar info
-# Nombre de registres successius a retornar a cada rendiment (yield)
-chunck.sz <- 1.e6
-
-runfiles <- list.files(runDir)
-
-#--------- Documentació de la funció----------#
-
-#' @param runfiles Fastq files from Illumina (run directory folder)
+#' R1R2toFLASH
+#'
+#' A function that runs FLASH program to extend paired-end reads and generate some report graphs
+#' @param runfiles Character indicating which files are going to be processed, often with fastq.gz extension
+#' @param flash Folder path containing FLASH executable
 #' @param min.len Minimum length to consider a sequence
 #' @param min.ov Minimum overlap (in nt) between R1 and R2
 #' @param max.ov Maximum overlap (in nt) between R1 and R2
 #' @param err.lv Mismatch fraction accepted in overlapping
-#' @param flash Folder path containing FLASH executable
 #' @param chunck.sz Chunck size to be used by FastqStreamer() function
+#' @return The function returns a data.frame() object containing FLASH results
+#'   for your sequenced regions, but also two report files:
+#'   \enumerate{
+#'   \item `FLASH_barplot.pdf`: Bar plots representing extended vs not extended reads
+#'     and the yield of the process for each pool.
+#'   \item `FLASH_report.txt`: Includes the data returned by the function with FLASH parameters used.
+#' }
+#' @importFrom QApckg executeFLASH
+#' @export
+#' @examples
+#' runDir <- "F:/TFM Bioinfo/HBV_Genotipat_5pX_PreS1_Modificat/run"
+#' flash <- "C:/FLASH/flash.exe"
+#' runfiles <- list.files(runDir)
+#' R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,chunck.sz=1.e6)
 
-R1R2toFLASH <- function(runfiles,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,flash,chunck.sz=1.e6)
+R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,chunck.sz=1.e6)
 {
+# Si la ruta on es troben els fitxers run no està ben especificada, intenta buscar la
+# ruta correcta a partir del directori de treball
+  # Si tot i així no troba fitxers, atura l'execució i mostra un issatge d'error
+  if(length(runfiles)==0) {
+    runfiles <- list.files(paste(getwd(),"/run",sep=''))
+    if(length(runfiles)==0) {
+      stop("Couldn't find any Raw Data file, please indicate correct path")
+    }
+  }
 
 # La funció sub() permet substituir un patró pel que indiquem com 2n argument
 # En aquest cas, les variables runfiles i snms son idèntiques (de moment)
@@ -56,32 +64,31 @@ out.flnms <- file.path(flashDir,out.flnms)
 
 # Guarda de la taula només els R1
 parts <- parts[parts[,3]=="R1",,drop=FALSE]
-# Construeix una matriu 2x2 amb tot 0
-res <- matrix(0,nrow=length(out.flnms),ncol=2) # length(out.flnms)= 2 en aquest cas, que son els pools
-# Assigna com a nom de fila el pool (regió de VHB) i com a columnes els reads segons si s'ha donat o no extensió
-rownames(res) <- paste(parts[,1],parts[,2],sep="_")
-colnames(res) <- c("Extended","NoExtd")
 
 # Defineix les opcions necessàries per a l'execució de FLASH
 flash.opts <- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
 
-#----- Caldria revisar aquesta part --------#
-## Aplica la funció 'executeFLASH()' del paquet, que permet realitzar l'extensió
-# dels reads R1 i R2 i guardar el nº de reads units (extended) i no units (no extended)
+
+## Itera sobre el total de pools (nº de fitxers que es generaran) i aplica la funció 'executeFLASH()'
+# del paquet, que permet realitzar l'extensió dels reads R1 i R2 i guardar el nº de reads units (extended)
+# i no units (no extended)
+# La funció 'foreach()' funciona com un bucle for però de forma més ràpida, i permet executar la funció
+# definida a partir de l'argument .export
 # Parteix dels fitxers R1 i R2 de cadascun dels pools, així com el nom del fitxer fastq
 # resultant que es guardarà a la carpeta flash
-p1 <- executeFLASH(R1.flnms[1],R2.flnms[1],out.flnms[1])
-p2 <- executeFLASH(R1.flnms[2],R2.flnms[2],out.flnms{2})
+flashres <- foreach(i=1:length(out.flnms),.export='executeFLASH',.packages='ShortRead') %do%
+  executeFLASH(R1.flnms[i],R2.flnms[i],out.flnms[i])
 
-# Guarda a la taula de resultats (res) el nº de reads units i no units per FLASH
-# per a cadascun dels pools avaluats
-res[1,] <- p1
-res[2,] <- p2
-#------------------------------------#
+# Construeix una matriu 2x2 que inclogui els resultats d'aplicar FLASH per cada pool
+res <- matrix(unlist(flashres),nrow=length(out.flnms),ncol=2,byrow=TRUE) # length(out.flnms)= 2 en aquest cas, que son els pools
+# Assigna com a nom de fila el pool (regió de VHB) i com a columnes els reads segons si s'ha donat o no extensió
+rownames(res) <- paste(parts[,1],parts[,2],sep="_")
+colnames(res) <- c("Extended","NoExtd")
 
 # Guarda un dataframe amb les dades resultants del FLASH (taula res), afegint la
 # columna Yield calculada dividint els reads extended entre el total *100
 df.res <- data.frame(res,Yield=round(res[,1]/(res[,1]+res[,2])*100,1))
+
 # Guarda el fitxer de report de FLASH en format .txt
 txt.flnm <- file.path(repDir,"FLASH_report.txt")
 # Comandes per omplir el fitxer txt generat. Recull els paràmetres indicats al FLASH
@@ -92,19 +99,13 @@ cat("\nFLASH parameters:")
 cat("\n    Minimum overlap:",min.ov)
 cat("\n    Maximum overlap:",max.ov)
 cat("\n        Error level:",err.lv,"\n\n")
-print(df.res)
+cat(df.res,file=txt.flnm)
 sink() # Tanca el fitxer
-
-flash.res <- df.res # Necessari??
-# Guarda a la carpeta reports la taula en format RData
-save(flash.res,file=file.path(repDir,"FLASH_table.RData"))
 
 # Genera el pdf que contindrà el gràfic barplot dels resultats FLASH
 pdf.flnm <- file.path(repDir,"FLASH_barplot.pdf")
 pdf(pdf.flnm,paper="a4",width=6,height=10)
 par(mfrow=c(2,1))
-
-library(RColorBrewer)
 
 pal=brewer.pal(8,"Dark2") # Crea la paleta de colors
 M <- data.matrix(df.res[,1:2]) # Guarda les columnes 1 i 2 de la taula de resultats
@@ -123,4 +124,5 @@ title(main="Yield in percentage",cex.main=1,line=1)
 
 dev.off()
 
+return(df.res)
 }

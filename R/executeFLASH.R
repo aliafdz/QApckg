@@ -1,16 +1,21 @@
+#' executeFLASH
+#'
+#' Runs FLASH to extend R1 and R2 reads.
+#' This function is only defined for correct execution of R1R2toFLASH function from the same package.
+#' @param R1 Path for R1 reads file.
+#' @param R2 Path for R2 reads file.
+#' @param outfile File path for FLASH output. If it is not specified, the fastq file
+#'   generated will be saved in current working directory.
+#' @return This function returns a matrix containing de number of reads extended
+#'   and not extended by FLASH. Additionaly, a fastq file with extended reads
+#'   will be saved to outfile path.
+#' @seealso [QApckg::R1R2toFLASH]
+#' @export
 
-#p1<- executeFLASH(R1.flnms[1],R2.flnms[1],out.flnms[1])
-#p2<- executeFLASH(R1.flnms[2],R2.flnms[2],out.flnms{2})
-
-#res[1,] <- p1
-#res[2,] <- p2
-
-
-#' @param R1 File path with R1 reads
-#' @param R2 File path with R2 reads
-#' @param outfile File path for FLASH output
-
-executeFLASH <- function(R1,R2,outfile) {
+executeFLASH <- function(R1,R2,outfile='none') {
+  if(outfile=='none'){
+    outfile <- getwd()
+  }
 
   # Concatena la ruta de l'executable flash, els paràmetres definits en el fitxer QA i la ruta dels fitxers
   # R1 i R2 del pool avaluat
@@ -21,7 +26,7 @@ executeFLASH <- function(R1,R2,outfile) {
   # out.hist, out.histogram, out.notCombined_1.fastq i out.notCombined_2.fastq
   es <- system(command,intern=FALSE,wait=TRUE,show.output.on.console=FALSE,
                ignore.stdout=FALSE,invisible=TRUE)
-  if(es!=0) next
+  if(es!=0) stop()
   # Copia el fitxer de 'from' en 'to'. Es guarda el fitxer resultant (to) en la carpeta flash
   file.copy(from="out.extendedFrags.fastq",to=outfile,overwrite=TRUE)
 
