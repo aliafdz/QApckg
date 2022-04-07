@@ -1,20 +1,22 @@
 #' executeFLASH
 #'
 #' Runs FLASH to extend R1 and R2 reads.
-#' This function is only defined for correct execution of R1R2toFLASH function from the same package.
+#' This function is only defined for correct execution of \code{\link{R1R2toFLASH}} function from the same package.
 #' @param R1 Path for R1 reads file.
 #' @param R2 Path for R2 reads file.
 #' @param outfile File path for FLASH output. If it is not specified, the fastq file
 #'   generated will be saved in current working directory.
+#' @param chunck.sz Chunck size to be used by \code{\link{FastqStreamer}} function
 #' @return This function returns a matrix containing de number of reads extended
 #'   and not extended by FLASH. Additionaly, a fastq file with extended reads
 #'   will be saved to outfile path.
-#' @seealso [QApckg::R1R2toFLASH]
+#' @import ShortRead
+#' @seealso \code{\link{R1R2toFLASH}}
 #' @export
 
-executeFLASH <- function(R1,R2,outfile='none') {
-  if(outfile=='none'){
-    outfile <- getwd()
+executeFLASH <- function(R1,R2,outfile='flash.fastq',chunck.sz=1.e6) {
+  if(outfile=='flash.fastq'){
+    outfile <- file.path(getwd(),outfile)
   }
 
   # Concatena la ruta de l'executable flash, els paràmetres definits en el fitxer QA i la ruta dels fitxers

@@ -15,7 +15,10 @@
 #'     and the yield of the process for each pool.
 #'   \item `FLASH_report.txt`: Includes the data returned by the function with FLASH parameters used.
 #' }
-#' @importFrom QApckg executeFLASH
+#' @import grDevices
+#' @import graphics
+#' @import utils
+#' @import RColorBrewer
 #' @export
 #' @examples
 #' runDir <- "F:/TFM Bioinfo/HBV_Genotipat_5pX_PreS1_Modificat/run"
@@ -27,7 +30,7 @@ R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0
 {
 # Si la ruta on es troben els fitxers run no està ben especificada, intenta buscar la
 # ruta correcta a partir del directori de treball
-  # Si tot i així no troba fitxers, atura l'execució i mostra un issatge d'error
+  # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
   if(length(runfiles)==0) {
     runfiles <- list.files(paste(getwd(),"/run",sep=''))
     if(length(runfiles)==0) {
@@ -66,8 +69,9 @@ out.flnms <- file.path(flashDir,out.flnms)
 parts <- parts[parts[,3]=="R1",,drop=FALSE]
 
 # Defineix les opcions necessàries per a l'execució de FLASH
-flash.opts <- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
-
+# Aquesta variable es guarda com a global, per tal de poder accedir a ella des de la funció
+# 'executeFLASH()' i que no aparegui error
+flash.opts <<- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
 
 ## Itera sobre el total de pools (nº de fitxers que es generaran) i aplica la funció 'executeFLASH()'
 # del paquet, que permet realitzar l'extensió dels reads R1 i R2 i guardar el nº de reads units (extended)
@@ -77,7 +81,7 @@ flash.opts <- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
 # Parteix dels fitxers R1 i R2 de cadascun dels pools, així com el nom del fitxer fastq
 # resultant que es guardarà a la carpeta flash
 flashres <- foreach(i=1:length(out.flnms),.export='executeFLASH',.packages='ShortRead') %do%
-  executeFLASH(R1.flnms[i],R2.flnms[i],out.flnms[i])
+  executeFLASH(R1.flnms[i],R2.flnms[i],out.flnms[i],chunck.sz)
 
 # Construeix una matriu 2x2 que inclogui els resultats d'aplicar FLASH per cada pool
 res <- matrix(unlist(flashres),nrow=length(out.flnms),ncol=2,byrow=TRUE) # length(out.flnms)= 2 en aquest cas, que son els pools
@@ -99,7 +103,8 @@ cat("\nFLASH parameters:")
 cat("\n    Minimum overlap:",min.ov)
 cat("\n    Maximum overlap:",max.ov)
 cat("\n        Error level:",err.lv,"\n\n")
-cat(df.res,file=txt.flnm)
+# 'capture.output()' permet mostrat la taula de resultats tal i com es mostra en l'output de R
+cat(capture.output(df.res), sep = '\n')
 sink() # Tanca el fitxer
 
 # Genera el pdf que contindrà el gràfic barplot dels resultats FLASH
