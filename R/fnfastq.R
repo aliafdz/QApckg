@@ -45,9 +45,10 @@ fn.fastq <- function(flnm,ln=301) # ln és 301 per defecte, però en realitat é
                             na.rm=TRUE) * nrds[nchk]
   }
   close(strm)
+  result <- list(fvnq=fnm.q/sum(nrds),fvnl=fnm.l/sum(nrds),all.ln=all.ln)
   # Retorna una llista amb 3 matrius:
   # 1- Quantils de phred score per posició entre total de reads
   # 2- Quantils aplicats a la longitud dels reads entre el total
   # 3- Nº de cicles de seqüenciació (longitud dels reads)
-  return(list(fvnq=fnm.q/sum(nrds),fvnl=fnm.l/sum(nrds),all.ln=all.ln))
+  return(result)#list(fvnq=fnm.q/sum(nrds),fvnl=fnm.l/sum(nrds),all.ln=all.ln))
 }

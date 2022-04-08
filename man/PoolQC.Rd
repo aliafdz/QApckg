@@ -7,14 +7,18 @@
 PoolQC(runfiles, flashfiles, samples, primers)
 }
 \arguments{
-\item{runfiles}{Character indicating the Raw Data files from Illumina MiSeq, often with fastq.gz extension}
+\item{runfiles}{Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension}
 
 \item{samples}{Data frame}
 
 \item{primers}{Data frame}
 
-\item{flahsfiles}{Character indicating the files processed by FLASH program, with fastq extension}
+\item{flahsfiles}{Vector including the names of FLASH processed files, with fastq extension}
 }
 \description{
 PoolQC
+}
+\details{
+Files indicated in \code{runfiles} and \code{flashfiles} arguments must be located in different folders,
+  named runDir and flashDir respectively.
 }

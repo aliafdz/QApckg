@@ -1,7 +1,9 @@
 #' PoolQC
 #'
-#' @param runfiles Character indicating the Raw Data files from Illumina MiSeq, often with fastq.gz extension
-#' @param flahsfiles Character indicating the files processed by FLASH program, with fastq extension
+#' @details Files indicated in \code{runfiles} and \code{flashfiles} arguments must be located in different folders,
+#'   named runDir and flashDir respectively.
+#' @param runfiles Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension
+#' @param flahsfiles Vector including the names of FLASH processed files, with fastq extension
 #' @param samples Data frame
 #' @param primers Data frame
 #'
@@ -69,12 +71,26 @@ if(is.vector(parts))
 colnames(parts) <- c("PatID","SmplID")
 
 ### Fitxers R1 i R2 originals, de la carpeta run
-# Guarda el nom dels fitxers R1 i R2 buscant quins corresponen de l'argument runfiles
+# Guarda el nom dels fitxers R1 i R2 buscant quins contenen el terme desitjar en els noms
+# dels fitxers run
 R1.flnms <- runfiles[which(grepl('R1',runfiles))]
 R2.flnms <- runfiles[which(grepl('R2',runfiles))]
 
 ### Sincronitza la longitud dels amplicons dels pools amb el nom d'aquests
 pln <- pln[parts[,"PatID"]]
+
+### Amb 'sapply()' aplica la funció 'fn.fastq()' del paquet sobre tots els fitxers
+# de la carpeta run
+rundata <- sapply(c(1:length(runfiles)),function(i){
+  fn.fastq(file.path(runDir,runfiles)[i])})
+# Assigna cada resultat al seu nom de fitxer corresponent
+colnames(rundata) <- runfiles
+
+### Amb 'sapply()' aplica la funció 'fn.fastq()' del paquet sobre tots els fitxers
+# de la carpeta flash
+flashdata <- sapply(c(1:length(snms)),function(i){
+  fn.fastq(file.path(flashDir,flashfiles[i]),pln[i])}) # pln per guardar com argument ln la longitud de l'amplicó!
+colnames(flashdata) <- flashfiles
 
 ### Loop sobre pools
 for(i in 1:length(snms))
@@ -84,26 +100,25 @@ for(i in 1:length(snms))
   pdf(file.path(repDir,pdf.flnm),paper="a4r",width=10.5,height=6.5)
   par(mfrow=c(2,1),mar=c(3,4,1.5,2)+0.1)
 
-files <- c(file.path(runDir,runfiles),file.path(flashDir,flashfiles))
-a <- sapply(c(1:length(files)),function(i){
-  fn.fastq(files[i])
-},USE.NAMES = TRUE)
 
-  # Aplica la funció del principi sobre els fitxers R1 i R2 del pool
+  # Guarda els resultats de la funció 'fn.fastq()' que corresponen al pool avaluat
+  # i diferenciant els fitxers R1 i R2
   # Això és pel gràfic d'abans de flash, avalua la qualitat dels reads inicials
-  lst1 <- fn.fastq(file.path(runDir,R1.flnms[i]))
+  lst1 <- rundata[,which(colnames(rundata) %in% R1.flnms[i])]
+  lst2 <- rundata[,which(colnames(rundata) %in% R2.flnms[i])]
+
   # Guarda la taula amb quantils de phred score per posició entre total de reads
+  # per les dades de R1 i R2
   fvnm1 <- lst1$fvnq
-  # Aplica la funció de nou sobre R2
-  lst2 <- fn.fastq(file.path(runDir,R2.flnms[i]))
   fvnm2 <- lst2$fvnq
 
   # Genera el gràfic QCbyPos per les dades crues de la carpeta run
   plot.QC(fvnm1,fvnm2,snms[i])
 
-  # Aplica la primera funció sobre els fastq resultants de flash
-  lst <- fn.fastq(file.path(flashDir,flashfiles[i]),pln[i]) # pln per guardar com argument ln la longitud de l'amplicó!
-  # Matriu amb quantils de phred score per posició entre total de reads
+  # Guarda els resultats de la funció 'fn.fastq()' sobre FLASH que corresponen al pool avaluat
+  lst <- flashdata[,i]
+
+  # Matriu amb quantils de phred score per posició entre total de reads per les dades FLASH
   fvnm <- lst$fvnq
   # Genera el gràfic QCbyPos dels resultats de FLASH
   plot.QC(fvnm,FL=TRUE)
@@ -143,4 +158,5 @@ a <- sapply(c(1:length(files)),function(i){
   grid()
 
   dev.off()
-}}
+}
+return(cat('QC by position plots done successfully'))}

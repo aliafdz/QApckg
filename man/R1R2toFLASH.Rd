@@ -42,7 +42,7 @@ The function returns a data.frame() object containing FLASH results
 A function that runs FLASH program to extend paired-end reads and generate some report graphs
 }
 \examples{
-runDir <- "F:/TFM Bioinfo/HBV_Genotipat_5pX_PreS1_Modificat/run"
+runDir <- "C:/run"
 flash <- "C:/FLASH/flash.exe"
 runfiles <- list.files(runDir)
 R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,chunck.sz=1.e6)

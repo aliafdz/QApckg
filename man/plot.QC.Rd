@@ -8,13 +8,16 @@
 }
 \arguments{
 \item{fvnm1, fvnm2}{Matrix or array containing Phred score values by read position for
-5, 25, 50, 75 and 95% quantiles.}
+0.05, 0.25, 0.5, 0.75 and 0.95 quantiles.}
 
 \item{snm}{Character indicating the name of the pool of evaluated reads.}
 
 \item{SW}{Logical indicating if the plot should include quality profile by SW (Sliding Window).}
 
 \item{FL}{Logical indicating if the first argument corresponds to FLASH extended reads scores.}
+}
+\value{
+plot QC
 }
 \description{
 This function generates QC plots by read position
