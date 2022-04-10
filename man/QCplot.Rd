@@ -8,17 +8,36 @@ QCplot(fvnm1, fvnm2, snm, SW = FALSE, FL = FALSE)
 }
 \arguments{
 \item{fvnm1, fvnm2}{Matrix or array containing Phred score values by read position for
-0.05, 0.25, 0.5, 0.75 and 0.95 quantiles.}
+0.05, 0.25, 0.5, 0.75 and 0.95 quantiles.
+If a QC by position plot for R1 and R2 files is required, both arguments are needed, one
+for each file.}
 
-\item{snm}{Character indicating the name of the pool of evaluated reads.}
+\item{snm}{Character indicating the name of the pool of evaluated reads. Only required when
+both \code{fvnm1} and \code{fvnm2} are provided.}
 
 \item{SW}{Logical indicating if the plot should include quality profile by SW (Sliding Window).}
 
-\item{FL}{Logical indicating if the first argument corresponds to FLASH extended reads scores.}
-}
-\value{
-plot QC
+\item{FL}{Logical indicating if the first argument corresponds to the scores of FLASH extended reads.
+If \code{TRUE}, only \code{fvnm1} argument is required.}
 }
 \description{
-This function generates QC plots by read position
+Draws a scatter plot in the active graphics window for QC by read position values.
+}
+\details{
+This function is only defined for correct execution of \code{\link{PoolQCbyPos}}
+ function from the same package.
+
+\code{fvnm1} and \code{fvnm2} arguments are obtanied from the \code{\link{QCscores}}
+  function with argument \code{byPos=TRUE}.
+}
+\examples{
+flashDir <- "C:/flash"
+flashfiles <- list.files(flashDir)
+lst1 <- QCscores(file.path(flashDir,flashfiles[1]),byPos=T)
+fvnm1 <- lst1$fvnq
+QCplot(fvnm1,FL=TRUE) # QC plot for FLASH fastq file
+QCplot(fvnm1,SW=TRUE,FL=TRUE) # QC plot by SW for FLASH fastq file
+}
+\seealso{
+\code{\link{PoolQCbyPos}}, \code{\link{QCscores}}
 }
