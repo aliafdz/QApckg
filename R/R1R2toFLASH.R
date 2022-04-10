@@ -1,19 +1,23 @@
 #' R1R2toFLASH
 #'
-#' A function that runs FLASH program to extend paired-end reads and generate some report graphs
+#' A function that runs FLASH program to extend paired-end reads and generates some report graphics.
+#'
+#' @details Files indicated in \code{runfiles} must be located in a folder named runDir.
+#'   Also, a reports folder must be created in the project environment, whose path will be
+#'   named as repDir.
 #' @param runfiles Character indicating which files are going to be processed, often with fastq.gz extension
 #' @param flash Folder path containing FLASH executable
 #' @param min.len Minimum length to consider a sequence
 #' @param min.ov Minimum overlap (in nt) between R1 and R2
 #' @param max.ov Maximum overlap (in nt) between R1 and R2
 #' @param err.lv Mismatch fraction accepted in overlapping
-#' @param chunck.sz Chunck size to be used by FastqStreamer() function
-#' @return The function returns a data.frame() object containing FLASH results
+#' @param chunck.sz Chunck size to be used by \code{\link{FastqStreamer}} function
+#' @return The function returns a \code{\link{data.frame}} object containing FLASH results
 #'   for your sequenced regions, but also two report files:
 #'   \enumerate{
-#'   \item `FLASH_barplot.pdf`: Bar plots representing extended vs not extended reads
+#'   \item \code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
 #'     and the yield of the process for each pool.
-#'   \item `FLASH_report.txt`: Includes the data returned by the function with FLASH parameters used.
+#'   \item \code{FLASH_report.txt}: Includes the data returned by the function with FLASH parameters used.
 #' }
 #' @import grDevices
 #' @import graphics
@@ -37,6 +41,11 @@ R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0
       stop("Couldn't find any Raw Data file, please indicate correct path")
     }
   }
+
+  # Definim la variable per a la iteració dels chuncks com a global, per tal
+  # de poder accedir a ella des de funcions posteriors del pipeline sense
+  # requerir la seva definició múltiples cops
+  chunck.sz <<- chunck.sz
 
 # La funció sub() permet substituir un patró pel que indiquem com 2n argument
 # En aquest cas, les variables runfiles i snms son idèntiques (de moment)

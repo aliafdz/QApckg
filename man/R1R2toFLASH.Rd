@@ -27,19 +27,24 @@ R1R2toFLASH(
 
 \item{err.lv}{Mismatch fraction accepted in overlapping}
 
-\item{chunck.sz}{Chunck size to be used by FastqStreamer() function}
+\item{chunck.sz}{Chunck size to be used by \code{\link{FastqStreamer}} function}
 }
 \value{
-The function returns a data.frame() object containing FLASH results
+The function returns a \code{\link{data.frame}} object containing FLASH results
   for your sequenced regions, but also two report files:
   \enumerate{
-  \item `FLASH_barplot.pdf`: Bar plots representing extended vs not extended reads
+  \item \code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
     and the yield of the process for each pool.
-  \item `FLASH_report.txt`: Includes the data returned by the function with FLASH parameters used.
+  \item \code{FLASH_report.txt}: Includes the data returned by the function with FLASH parameters used.
 }
 }
 \description{
-A function that runs FLASH program to extend paired-end reads and generate some report graphs
+A function that runs FLASH program to extend paired-end reads and generates some report graphics.
+}
+\details{
+Files indicated in \code{runfiles} must be located in a folder named runDir.
+  Also, a reports folder must be created in the project environment, whose path will be
+  named as repDir.
 }
 \examples{
 runDir <- "C:/run"
