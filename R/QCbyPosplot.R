@@ -1,13 +1,11 @@
-#' plot.QC
+#' QCplot
 #'
 #' This function generates QC plots by read position
 #'
 #' @param fvnm1,fvnm2 Matrix or array containing Phred score values by read position for
 #'   0.05, 0.25, 0.5, 0.75 and 0.95 quantiles.
 #' @param snm Character indicating the name of the pool of evaluated reads.
-#'
 #' @param SW Logical indicating if the plot should include quality profile by SW (Sliding Window).
-#'
 #' @param FL Logical indicating if the first argument corresponds to FLASH extended reads scores.
 #'
 #' @return plot QC
@@ -16,18 +14,17 @@
 
 # Gràfic de QC per posició i SW dels reads originals abans i després de flash
 # Les línies dels quantils indiquen que com a màxim el % indicat dels reads tenen aquell Phred score
-plot.QC <- function(fvnm1,fvnm2,snm,SW=FALSE,FL=FALSE){
+QCplot <- function(fvnm1,fvnm2,snm,SW=FALSE,FL=FALSE){
 
   if(missing(fvnm2)&missing(snm)&FL==TRUE){
     # El primer argument seran les dades provinent de FLASH
     fvnm <- fvnm1
-    #
+    # Avalua si volem realitzar el gràfic de FLASH per sliding window i el calcula
     if(SW){
       nc <- ncol(fvnm)
       fvnm <- sapply(1:(nc-10),function(iwin)
         rowMeans(fvnm[,iwin:(iwin+9),drop=FALSE]))
     }
-
     # Gràfic de QC per posició i SW dels reads després de filtrar per FLASH
     # Nº de columnes
     nc <- ncol(fvnm)
