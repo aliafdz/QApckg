@@ -12,18 +12,19 @@
 #' @param byPos Logical indicating if QC by position should be done.
 #' @param byRead Logical indicating if QC by read should be done.
 #' @note Arguments \code{byPos} and \code{byRead} are mutually exclusive.
-#' @return If argument \code{byPos} is TRUE, the function returns a list including
+#' @return If argument \code{byPos=TRUE}, the function returns a list including
 #'   the following parameters:
 #'   \enumerate {
 #'   \item \code{fvnq}: A matrix with Phred quality scores across each nucleotide base in the reads.
 #'     Columns indicate base position and rows indicate 0.05, 0.25, 0.5, 0.75 and 0.95 Phred quantiles.
 #'   \item \code{fvnl}: A vector with normalized read lengths for each Phred quantile.
 #'   \item \code{all.ln}: A vector with all read lengths.}
-#' @return If argument \code{byRead} is TRUE, the function returns a list including
+#' @return If argument \code{byRead=TRUE}, the function returns a list including
 #'   the following parameters:
 #'   \enumerate {
 #'   \item \code{all.ln}: A vector with all read lengths.
 #'   \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.}
+#' @seealso \code{\link{PoolQCbyPos}}, \code{\link{PoolQCbyRead}}, \code{\link{QCplot}}
 #' @export
 
 QCscores <- function(flnm,ln=301,byPos=FALSE,byRead=FALSE) # ln és 301 per defecte, però en realitat és la longitud de l'amplicó

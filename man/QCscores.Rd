@@ -16,12 +16,31 @@ QCscores(flnm, ln = 301, byPos = FALSE, byRead = FALSE)
 \item{byRead}{Logical indicating if QC by read should be done.}
 }
 \value{
-If argument \code{byPos} is TRUE, the function returns a list including
+If argument \code{byPos=TRUE}, the function returns a list including
   the following parameters:
   \enumerate {
-  \item \code{fvnq}: }
+  \item \code{fvnq}: A matrix with Phred quality scores across each nucleotide base in the reads.
+    Columns indicate base position and rows indicate 0.05, 0.25, 0.5, 0.75 and 0.95 Phred quantiles.
+  \item \code{fvnl}: A vector with normalized read lengths for each Phred quantile.
+  \item \code{all.ln}: A vector with all read lengths.}
+
+If argument \code{byRead=TRUE}, the function returns a list including
+  the following parameters:
+  \enumerate {
+  \item \code{all.ln}: A vector with all read lengths.
+  \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.}
 }
 \description{
-This function applies \code{\link{FastqStreamer}} over a fastq file and returns quality
+Applies \code{\link{FastqStreamer}} over a fastq file and returns quality
   control mesures (Phred scores), either by position or by read.
+}
+\details{
+This function is only defined for correct execution of \code{\link{PoolQCbyPos}} and \code{\link{PoolQCbyRead}}
+ functions from the same package.
+}
+\note{
+Arguments \code{byPos} and \code{byRead} are mutually exclusive.
+}
+\seealso{
+\code{\link{PoolQCbyPos}}, \code{\link{PoolQCbyRead}}, \code{\link{QCplot}}
 }
