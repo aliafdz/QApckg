@@ -7,14 +7,23 @@
 PoolQCbyRead(flashfiles, samples, primers)
 }
 \arguments{
-\item{samples}{Data frame}
+\item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
+\code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
-\item{primers}{Data frame}
+\item{primers}{Data frame with information about the \emph{primers} used in the experiment, including
+\code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
+  and \code{Aa.lpos} columns.}
 
-\item{flahsfiles}{Vector including the names of FLASH processed files, with fastq extension}
+\item{flahsfiles}{Vector including the names of FLASH processed files, with fastq extension.}
+}
+\value{
+After execution, 3 pdf files will be saved in the reports folder; the first 2 include
+  the QC by read plots for each pool used in the experiment, and the 3rd shows the read length
+  distribution for each pool. A message indicating that the files are generated will appear in console.
 }
 \description{
-PoolQCbyRead
+This function evaluates fastq files after the execution of FLASH program to extend
+  paired-end reads, and returns QC by read plots in pdf format.
 }
 \details{
 Files indicated in \code{flashfiles} must be located in a folder named flashDir.
