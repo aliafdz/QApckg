@@ -28,7 +28,9 @@ If argument \code{byRead=TRUE}, the function returns a list including
   the following parameters:
   \enumerate {
   \item \code{all.ln}: A vector with all read lengths.
-  \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.}
+  \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.
+  \item \code{all.fnl30}: The result of dividing all.ln30/all.ln, which is the
+    fraction of bases below Q30 for each read.}
 }
 \description{
 Applies \code{\link{FastqStreamer}} over a fastq file and returns quality
