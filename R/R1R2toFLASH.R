@@ -22,7 +22,7 @@
 #' @import grDevices
 #' @import graphics
 #' @import utils
-#' @import RColorBrewer
+#' @importFrom RColorBrewer brewer.pal
 #' @export
 #' @examples
 #' runDir <- "C:/run"
@@ -112,8 +112,9 @@ cat("\nFLASH parameters:")
 cat("\n    Minimum overlap:",min.ov)
 cat("\n    Maximum overlap:",max.ov)
 cat("\n        Error level:",err.lv,"\n\n")
-# 'capture.output()' permet mostrat la taula de resultats tal i com es mostra en l'output de R
-cat(capture.output(df.res), sep = '\n')
+# 'capture.output()' permet mostrar la taula de resultats tal i com es mostra en l'output de R
+#cat(capture.output(df.res), sep = '\n')
+capture.output(flashres,file=txt.flnm,append=TRUE)
 sink() # Tanca el fitxer
 
 # Genera el pdf que contindrà el gràfic barplot dels resultats FLASH
