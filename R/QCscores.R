@@ -23,7 +23,9 @@
 #'   the following parameters:
 #'   \enumerate {
 #'   \item \code{all.ln}: A vector with all read lengths.
-#'   \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.}
+#'   \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.
+#'   \item \code{all.fnl30}: The result of dividing all.ln30/all.ln, which is the
+#'     fraction of bases below Q30 for each read.}
 #' @seealso \code{\link{PoolQCbyPos}}, \code{\link{PoolQCbyRead}}, \code{\link{QCplot}}
 #' @export
 
@@ -96,10 +98,13 @@ else if(byRead){
   all.nl30 <- c(all.nl30,nl30)
   ###  Longituds de seqüència
   all.ln <- c(all.ln, width(sqq)) # Vector amb el nº de cicles com a nombres enters
+
+  # Divideix les bases<30 entre el nº de cicles -> fracció de les bases per read
+  all.fnl30 <- all.nl30/all.ln
   }
   # Retorna una llista formada per les 2 matrius: amb el nº de cicles (longitud dels reads)
   # i les bases per sota de Q30
-  result <- list(all.ln=all.ln,all.nl30=all.nl30)
+  result <- list(all.ln=all.ln,all.nl30=all.nl30,all.fnl30=all.fnl30)
 }
   close(strm)
   return(result)
