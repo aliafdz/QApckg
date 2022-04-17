@@ -59,8 +59,8 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
 ######## POOLQCBYREAD
 
   ### Loop sobre pools
-  for(i in 1:length(snms))
-  { # Guarda els resultats de la funció 'QCscores()' sobre FLASH que corresponen al pool avaluat
+  foreach(i=1:length(snms)) %do% {
+    # Guarda els resultats de la funció 'QCscores()' sobre FLASH que corresponen al pool avaluat
     lst1 <- flashdata[,i]
 
     # Genera el pdf on aniran els gràfics
@@ -89,8 +89,9 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
          paste(q95,q80,med,sep="\n"))
     title(main=parts[i,"PatID"],line=1)
 
-    # Divideix les bases<30 entre el nº de cicles -> fracció de les bases per read
-    all.fnl30 <- lst1$all.nl30/lst1$all.ln
+    # Guarda les bases<30 entre el nº de cicles -> fracció de les bases per read
+    all.fnl30 <- lst1$all.fnl30
+
     # D'aquesta matriu de divisió agafa els valors per sota del quantil 0.99
     fnl30 <- all.fnl30[all.fnl30<quantile(all.fnl30,p=0.99)]
     # Nou histograma però amb les fraccions de bases per read
