@@ -141,8 +141,9 @@ flashres$FiltQ30 <- freads
 flashres$Raw <- flashres$Extended+flashres$NoExtd
 
 # Guarda els resultats de la taula actualitzada en un fitxer .txt
-capture.output(flashres,file.path(repDir,"FiltQ30_report.txt"))
-
+sink(file.path(repDir,"FiltQ30_report.txt"))
+print(flashres)
+sink()
 
 ### PROVA per veure si es podrien juntar els fitxers de FLASH i de filtrat
 ### Sí que funciona!!
