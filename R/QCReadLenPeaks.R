@@ -161,4 +161,4 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
   }
 
   dev.off()
-  return(cat('The generated files are in the reports folder'))}
+  return(cat('The generated files are in the reports folder\n'))}
