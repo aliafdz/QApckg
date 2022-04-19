@@ -2,13 +2,15 @@
 #'
 #' This function evaluates fastq files before and after the execution of FLASH program to extend
 #'   paired-end reads, and returns QC by position plots in pdf format.
+#' It can be applied also after filtering FLASH fastq files by Q30.
 #'
 #' @details Files indicated in \code{runfiles} and \code{flashfiles} arguments must be located in different folders,
 #'   whose paths will be named as runDir and flashDir respectively. Also, a reports folder must be created
 #'   in the project environment, whose path will be named as repDir.
-#' @param runfiles Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension
-#' @param flahsfiles Vector including the names of FLASH processed files, with fastq extension
 #'
+#' @param runfiles Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension.
+#'   If the function is applied for filtered fastq files, this argument must be NA or missing.
+#' @param flahsfiles Vector including the names of FLASH processed/filtered files, with fastq extension.
 #' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
@@ -28,15 +30,22 @@
 #'                      colClasses="character",stringsAsFactors=F)
 #' primers <- read.table(file.path(dataDir,"primers.csv"), sep="\t", header=T,
 #'                       stringsAsFactors=F)
-#' PoolQCbyPos(runfiles,flashfiles,samples,primers)
+#' PoolQCbyPos(flashfiles,samples,primers,runfiles)
 #'
 
-PoolQCbyPos <- function(runfiles,flashfiles,samples,primers) {
+PoolQCbyPos <- function(flashfiles,samples,primers,runfiles) {
 
-# Si la ruta on es troben els fitxers run no està ben especificada, intenta buscar la
-# ruta correcta a partir del directori de treball
+# Si aquesta funció s'aplica sobre les dades filtrades per Q30, és a dir no
+# s'inclou l'argument runfiles, aquests es defineixen com NA
+# D'aquesta manera es pot avaluar d'on venen les dades
+if(missing(runfiles)){
+  runfiles <- NA
+}
+
+# Si s'inclouen els arxius de run però la ruta on es troben no està ben especificada,
+# intenta buscar la ruta correcta a partir del directori de treball
 # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
-if(!missing(runfiles)&length(runfiles)==0) { # !missing(runfiles)
+if(!missing(runfiles)&length(runfiles)==0) {
   runfiles <- list.files(paste(getwd(),"/run",sep=''))
   if(length(runfiles)==0) {
     stop("Couldn't find any Raw Data file, please indicate correct path")
@@ -76,11 +85,11 @@ pln <- sapply(pools,function(p)
   # Calcula el màxim de la resta entre la posició del primer reverse de l'amplicó avaluat i la posició del forward
   max(primers$RV.pos[idx]-primers$FW.pos[idx]+1)})
 
+if(!is.na(runfiles[1])){
 ### Fitxers que resulten de Flash
 # Guarda del fitxer només el nom del pool seguit de S1 o S2
 snms <- sub("_flash\\.fastq$","",flashfiles)
 
-if(!missing(runfiles)){
 # Genera una taula amb el nom del pool en una columna i S1 o S2 en una altra
 parts <- t(sapply(snms,function(str) strsplit(str,split="_")[[1]]))
 if(is.vector(parts))
@@ -113,6 +122,12 @@ flashdata <- sapply(c(1:length(snms)),function(i){
 colnames(flashdata) <- flashfiles
 }
 else{ # Si no hi ha fitxers run perquè estem aplicant sobre FLASH filtrat per Q30
+  ### Fitxers que resulten de Flash després de filtrar per Q30
+  # Guarda el nom dels pools treient el sufix dels fitxers de flashFiltDir
+  snms <- sub("_flashFilt\\.fastq$","",flashfiles)
+  # Sincronitza la longitud dels amplicons dels pools amb el nom d'aquests
+  pln <- pln[snms]
+  # Aplica la funció QCscores per calcular la qualitat per posició i fer els gràfics corresponents
   flashdata <- sapply(c(1:length(snms)),function(i){
     QCscores(file.path(flashFiltDir,flashfiles[i]),ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
   colnames(flashdata) <- flashfiles
@@ -120,7 +135,8 @@ else{ # Si no hi ha fitxers run perquè estem aplicant sobre FLASH filtrat per Q
 
 ### Loop sobre pools
 for(i in 1:length(snms))
-{ # Genera el pdf PoolQCbyPos del pool avaluat
+{ if(!is.na(runfiles[1])){
+  # Genera el pdf PoolQCbyPos del pool avaluat
   pdf.flnm <- paste("PoolQCbyPos",parts[i,1],"pdf",sep=".")
   # Genera la ruta on es guardarà el pdf (reports)
   pdf(file.path(repDir,pdf.flnm),paper="a4r",width=10.5,height=6.5)
@@ -164,8 +180,8 @@ for(i in 1:length(snms))
   bxp(bxp.dt,pars=list(boxfilll="lavender"),border="navy",
       ylab="Read length",las=2,ylim=c(0,max(stats)))
   title(main="Read length distributions")
-
-  if(missing(runfiles)){
+}
+  else if(is.na(runfiles)){
     # Genera el pdf indicat pel pool avaluat
     pdf.flnm <- paste("PoolFiltQCbyPos",snms[i],"pdf",sep=".")
     # Genera la ruta on es guardarà el pdf (reports)
@@ -182,9 +198,11 @@ for(i in 1:length(snms))
     QCplot(fvnm,FL=TRUE)
 
     # Gràfic SW pels resultats de flash
-    QCplot(fvnm,SW=TRUE,FL=TRUE)}
+    QCplot(fvnm,SW=TRUE,FL=TRUE)
 
-  if(!missing(flashfiles)){
+    # Canvia la disposició pel gràfic de longitud dels reads
+    par(mfrow=c(1,2))}
+
   # Gràfic de longitud de reads després de flash
   # Guarda la longitud dels reads i la seva freqüència (calculada amb 'table()')
   lnfrq <- table(lst$all.ln)
@@ -203,6 +221,6 @@ for(i in 1:length(snms))
   axis(side=4,col="blue",col.axis="blue",at=seq(0,1,0.1),las=2)
   grid()
 
-  dev.off()}
+  dev.off()
 }
-return(cat('The generated files are in the reports folder'))}
+return(cat('The generated files are in the reports folder\n'))}

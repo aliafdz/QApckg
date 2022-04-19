@@ -4,11 +4,9 @@
 \alias{PoolQCbyPos}
 \title{PoolQCbyPos}
 \usage{
-PoolQCbyPos(runfiles, flashfiles, samples, primers)
+PoolQCbyPos(flashfiles, samples, primers, runfiles)
 }
 \arguments{
-\item{runfiles}{Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension}
-
 \item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
@@ -16,7 +14,10 @@ PoolQCbyPos(runfiles, flashfiles, samples, primers)
 \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
   and \code{Aa.lpos} columns.}
 
-\item{flahsfiles}{Vector including the names of FLASH processed files, with fastq extension}
+\item{runfiles}{Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension.
+If the function is applied for filtered fastq files, this argument must be NA or missing.}
+
+\item{flahsfiles}{Vector including the names of FLASH processed/filtered files, with fastq extension.}
 }
 \value{
 After execution, a pdf file for each pool used in the experiment will be saved in the
@@ -25,6 +26,7 @@ After execution, a pdf file for each pool used in the experiment will be saved i
 \description{
 This function evaluates fastq files before and after the execution of FLASH program to extend
   paired-end reads, and returns QC by position plots in pdf format.
+It can be applied also after filtering FLASH fastq files by Q30.
 }
 \details{
 Files indicated in \code{runfiles} and \code{flashfiles} arguments must be located in different folders,
@@ -40,6 +42,6 @@ samples <- read.table(file.path(dataDir,"samples.csv"), sep="\t", header=T,
                      colClasses="character",stringsAsFactors=F)
 primers <- read.table(file.path(dataDir,"primers.csv"), sep="\t", header=T,
                       stringsAsFactors=F)
-PoolQCbyPos(runfiles,flashfiles,samples,primers)
+PoolQCbyPos(flashfiles,samples,primers,runfiles)
 
 }
