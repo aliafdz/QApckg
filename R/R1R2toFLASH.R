@@ -113,8 +113,7 @@ cat("\n    Minimum overlap:",min.ov)
 cat("\n    Maximum overlap:",max.ov)
 cat("\n        Error level:",err.lv,"\n\n")
 # 'capture.output()' permet mostrar la taula de resultats tal i com es mostra en l'output de R
-#cat(capture.output(df.res), sep = '\n')
-capture.output(flashres,file=txt.flnm,append=TRUE)
+capture.output(df.res,file=txt.flnm,append=TRUE)
 sink() # Tanca el fitxer
 
 # Genera el pdf que contindrà el gràfic barplot dels resultats FLASH
@@ -139,5 +138,5 @@ title(main="Yield in percentage",cex.main=1,line=1)
 
 dev.off()
 
-return(df.res)
+return(result <- df.res)
 }
