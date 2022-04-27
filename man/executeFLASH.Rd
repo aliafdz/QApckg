@@ -4,7 +4,7 @@
 \alias{executeFLASH}
 \title{executeFLASH}
 \usage{
-executeFLASH(R1, R2, outfile = "flash.fastq", chunck.sz = 1e+06)
+executeFLASH(R1, R2, outfile = "flash.fastq")
 }
 \arguments{
 \item{R1}{Path for R1 reads file.}
@@ -13,8 +13,6 @@ executeFLASH(R1, R2, outfile = "flash.fastq", chunck.sz = 1e+06)
 
 \item{outfile}{File path for FLASH output. If it is not specified, the fastq file
 generated will be saved in current working directory.}
-
-\item{chunck.sz}{Chunck size to be used by \code{\link{FastqStreamer}} function}
 }
 \value{
 This function returns a matrix containing de number of reads extended

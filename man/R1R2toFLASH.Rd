@@ -10,8 +10,7 @@ R1R2toFLASH(
   min.len = 200,
   min.ov = 20,
   max.ov = 300,
-  err.lv = 0.1,
-  chunck.sz = 1e+06
+  err.lv = 0.1
 )
 }
 \arguments{
@@ -26,8 +25,6 @@ R1R2toFLASH(
 \item{max.ov}{Maximum overlap (in nt) between R1 and R2}
 
 \item{err.lv}{Mismatch fraction accepted in overlapping}
-
-\item{chunck.sz}{Chunck size to be used by \code{\link{FastqStreamer}} function}
 }
 \value{
 The function returns a \code{\link{data.frame}} object containing FLASH results
@@ -47,8 +44,8 @@ Files indicated in \code{runfiles} must be located in a folder named runDir.
   named as repDir.
 }
 \examples{
-runDir <- "C:/run"
+runDir <- "./run"
 flash <- "C:/FLASH/flash.exe"
 runfiles <- list.files(runDir)
-R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,chunck.sz=1.e6)
+R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10)
 }

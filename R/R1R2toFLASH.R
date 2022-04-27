@@ -11,7 +11,6 @@
 #' @param min.ov Minimum overlap (in nt) between R1 and R2
 #' @param max.ov Maximum overlap (in nt) between R1 and R2
 #' @param err.lv Mismatch fraction accepted in overlapping
-#' @param chunck.sz Chunck size to be used by \code{\link{FastqStreamer}} function
 #' @return The function returns a \code{\link{data.frame}} object containing FLASH results
 #'   for your sequenced regions, but also two report files:
 #'   \enumerate{
@@ -25,12 +24,12 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @export
 #' @examples
-#' runDir <- "C:/run"
+#' runDir <- "./run"
 #' flash <- "C:/FLASH/flash.exe"
 #' runfiles <- list.files(runDir)
-#' R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,chunck.sz=1.e6)
+#' R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10)
 
-R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10,chunck.sz=1.e6)
+R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10)
 {
 # Si la ruta on es troben els fitxers run no està ben especificada, intenta buscar la
 # ruta correcta a partir del directori de treball
@@ -41,11 +40,6 @@ R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0
       stop("Couldn't find any Raw Data file, please indicate correct path")
     }
   }
-
-  # Definim la variable per a la iteració dels chuncks com a global, per tal
-  # de poder accedir a ella des de funcions posteriors del pipeline sense
-  # requerir la seva definició múltiples cops
-  chunck.sz <<- chunck.sz
 
 # La funció sub() permet substituir un patró pel que indiquem com 2n argument
 # En aquest cas, les variables runfiles i snms son idèntiques (de moment)
@@ -90,7 +84,7 @@ flash.opts <<- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
 # Parteix dels fitxers R1 i R2 de cadascun dels pools, així com el nom del fitxer fastq
 # resultant que es guardarà a la carpeta flash
 flashres <- foreach(i=1:length(out.flnms),.export='executeFLASH',.packages='ShortRead') %do%
-  executeFLASH(R1.flnms[i],R2.flnms[i],out.flnms[i],chunck.sz)
+  executeFLASH(R1.flnms[i],R2.flnms[i],out.flnms[i])
 
 # Construeix una matriu 2x2 que inclogui els resultats d'aplicar FLASH per cada pool
 res <- matrix(unlist(flashres),nrow=length(out.flnms),ncol=2,byrow=TRUE) # length(out.flnms)= 2 en aquest cas, que son els pools

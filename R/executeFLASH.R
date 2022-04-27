@@ -6,7 +6,6 @@
 #' @param R2 Path for R2 reads file.
 #' @param outfile File path for FLASH output. If it is not specified, the fastq file
 #'   generated will be saved in current working directory.
-#' @param chunck.sz Chunck size to be used by \code{\link{FastqStreamer}} function
 #' @return This function returns a matrix containing de number of reads extended
 #'   and not extended by FLASH. Additionaly, a fastq file with extended reads
 #'   will be saved to outfile path.
@@ -14,7 +13,7 @@
 #' @seealso \code{\link{R1R2toFLASH}}
 #' @export
 
-executeFLASH <- function(R1,R2,outfile='flash.fastq',chunck.sz=1.e6) {
+executeFLASH <- function(R1,R2,outfile='flash.fastq') {
   if(outfile=='flash.fastq'){
     outfile <- file.path(getwd(),outfile)
   }
@@ -40,7 +39,7 @@ executeFLASH <- function(R1,R2,outfile='flash.fastq',chunck.sz=1.e6) {
   ext <- sum(hstln[,2])
 
   #  Aplica la funció FastqStreamer per iterar sobre el fitxer fastq dels reads no units per FLASH
-  strm <- FastqStreamer("out.notCombined_1.fastq",n=chunck.sz)
+  strm <- FastqStreamer("out.notCombined_1.fastq")
   #  Carrega el fitxer fastq per chuncks i actualitza en nº total de reads
   noext <- 0
   while(length(sqq <- yield(strm)))

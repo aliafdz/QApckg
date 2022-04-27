@@ -39,8 +39,8 @@ QCscores <- function(flnm,ln=301,byPos=FALSE,byRead=FALSE) # ln és 301 per defe
   # Variable de nombre enter
   all.ln <- integer()
 
-  ### Aplica streamer (iteració) en el fitxer fastq. Cada iteració serà de la mida de la variable chunck.sz
-  strm <- FastqStreamer(flnm,n=chunck.sz) # chunck.sz definit en el fitxer principal
+  ### Aplica streamer (iteració) en el fitxer fastq. Cada iteració serà de 1 milió de reads
+  strm <- FastqStreamer(flnm)
 
   # Variable per a la iteració sobre els fastq
   nchk <- 0
