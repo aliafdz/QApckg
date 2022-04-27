@@ -20,7 +20,7 @@
 #'
 #' @seealso \code{\link{PoolQCbyPos}}, \code{\link{QCscores}}
 #' @examples
-#' flashDir <- "C:/flash"
+#' flashDir <- "./flash"
 #' flashfiles <- list.files(flashDir)
 #' lst1 <- QCscores(file.path(flashDir,flashfiles[1]),byPos=T)
 #' fvnm1 <- lst1$fvnq
