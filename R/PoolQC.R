@@ -22,13 +22,13 @@
 #'
 #' @export
 #' @examples
-#' runDir <- "C:/run"
-#' flashDir <- "C:/flash"
+#' runDir <- "./run"
+#' flashDir <- "./flash"
 #' runfiles <- list.files(runDir)
 #' flashfiles <- list.files(flashDir)
-#' samples <- read.table(file.path(dataDir,"samples.csv"), sep="\t", header=T,
+#' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                      colClasses="character",stringsAsFactors=F)
-#' primers <- read.table(file.path(dataDir,"primers.csv"), sep="\t", header=T,
+#' primers <- read.table("./data/mids.csv", sep="\t", header=T,
 #'                       stringsAsFactors=F)
 #' PoolQCbyPos(flashfiles,samples,primers,runfiles)
 #'

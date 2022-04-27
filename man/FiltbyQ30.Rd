@@ -42,10 +42,10 @@ This function is designed to be applied after \code{\link{R1R2toFLASH}} function
   done, the function will try to load the FLASH results table from the reports folder.
 }
 \examples{
-runDir <- "C:/run"
+runDir <- "./run"
 runfiles <- list.files(runDir)
 flash <- "C:/FLASH/flash.exe"
-flashDir <- "C:/flash"
+flashDir <- "./flash"
 flashfiles <- list.files(flashDir)
 flashres <- R1R2toFLASH(runfiles,flash)
 filtres <- FiltbyQ30(max.pct=0.05,flashfiles,flashres)

@@ -19,7 +19,6 @@
 #'   distribution for each pool. A message indicating that the files are generated will appear in console.
 #' @export
 
-#flashfiles <- list.files(flashDir)
 
 PoolQCbyRead <- function(flashfiles,samples,primers) {
 
