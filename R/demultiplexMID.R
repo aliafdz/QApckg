@@ -164,13 +164,13 @@ for(i in 1:length(pools)) {
 # per pool
 by.pools$MIDReads <- tapply(nreads$Reads,factor(nreads$Pool.Nm,levels=pools),sum)
 
+rownames(nreads) <- NULL
 result <- list(nreads=nreads,by.pools=by.pools)
 
 # Genera un fitxer .txt que es guardarà a la carpeta reports, on es guadarà en format taula els resultats
 # representats als gràfics
 sink(file.path(repDir,"SplidByMIDs.Rprt.txt"))
 cat("\nCoverage by Pool and MIDs\n\n")
-rownames(nreads) <- NULL
 print(nreads)
 cat("\n")
 print(by.pools)
