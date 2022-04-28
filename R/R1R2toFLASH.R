@@ -7,7 +7,6 @@
 #'   named as repDir.
 #' @param runfiles Character indicating which files are going to be processed, often with fastq.gz extension
 #' @param flash Folder path containing FLASH executable
-#' @param min.len Minimum length to consider a sequence
 #' @param min.ov Minimum overlap (in nt) between R1 and R2
 #' @param max.ov Maximum overlap (in nt) between R1 and R2
 #' @param err.lv Mismatch fraction accepted in overlapping
@@ -27,9 +26,9 @@
 #' runDir <- "./run"
 #' flash <- "C:/FLASH/flash.exe"
 #' runfiles <- list.files(runDir)
-#' R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10)
+#' R1R2toFLASH(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
 
-R1R2toFLASH <- function(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10)
+R1R2toFLASH <- function(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
 {
 # Si la ruta on es troben els fitxers run no està ben especificada, intenta buscar la
 # ruta correcta a partir del directori de treball
