@@ -33,9 +33,9 @@ demultiplexMID(
 }
 \value{
 A list containing the following:
-  \item{name nreads}{description A table with the number of reads
+  \item{nreads}{A table with the number of reads
     identified for each MID.}
-  \item{name by.pools}{description A table with the coverage of reads demultiplexed by pool.}
+  \item{by.pools}{A table with the coverage of reads demultiplexed by pool.}
   After execution, a FASTA file for each combination of MID and pool will be saved in the splits folder,
   including its associated reads. Additionaly, two report files will be generated:
   \enumerate{
@@ -53,7 +53,7 @@ It is important to note that MID sequences will be not trimmed from reads, they 
   association with each sample.
 
 Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
-  a directory for resulting FASTA files with demultiplexed reads must be named as splitsDir.
+  a directory for resulting FASTA files with demultiplexed reads must be named as splitDir.
   Also, a reports folder must be created in the project environment, whose path will be
   named as repDir.
 }
@@ -70,4 +70,7 @@ mids <- read.table("./data/mids.csv", sep="\t", header=T,
 
 demultiplexMID(flashffiles,samples,mids,maxdif,mid.start,mid.end)
 
+}
+\seealso{
+\code{\link{FiltbyQ30}}
 }
