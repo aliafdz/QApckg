@@ -8,7 +8,7 @@
 #'   association with each sample.
 #'
 #' @details Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
-#'   a directory for resulting FASTA files with demultiplexed reads must be named as splitsDir.
+#'   a directory for resulting FASTA files with demultiplexed reads must be named as splitDir.
 #'   Also, a reports folder must be created in the project environment, whose path will be
 #'   named as repDir.
 #'
@@ -24,9 +24,9 @@
 #' @param mid.end Expected end position for MID in sequence.
 #'
 #' @return A list containing the following:
-#'   \item{name nreads}{description A table with the number of reads
+#'   \item{nreads}{A table with the number of reads
 #'     identified for each MID.}
-#'   \item{name by.pools}{description A table with the coverage of reads demultiplexed by pool.}
+#'   \item{by.pools}{A table with the coverage of reads demultiplexed by pool.}
 #'   After execution, a FASTA file for each combination of MID and pool will be saved in the splits folder,
 #'   including its associated reads. Additionaly, two report files will be generated:
 #'   \enumerate{
@@ -37,6 +37,7 @@
 #'
 #' @import ShortRead
 #' @importFrom RColorBrewer brewer.pal
+#' @seealso \code{\link{FiltbyQ30}}
 #' @export
 #' @examples
 #' maxdif <- 1
