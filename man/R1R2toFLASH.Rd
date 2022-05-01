@@ -4,21 +4,12 @@
 \alias{R1R2toFLASH}
 \title{R1R2toFLASH}
 \usage{
-R1R2toFLASH(
-  runfiles,
-  flash,
-  min.len = 200,
-  min.ov = 20,
-  max.ov = 300,
-  err.lv = 0.1
-)
+R1R2toFLASH(runfiles, flash, min.ov = 20, max.ov = 300, err.lv = 0.1)
 }
 \arguments{
 \item{runfiles}{Character indicating which files are going to be processed, often with fastq.gz extension}
 
 \item{flash}{Folder path containing FLASH executable}
-
-\item{min.len}{Minimum length to consider a sequence}
 
 \item{min.ov}{Minimum overlap (in nt) between R1 and R2}
 
@@ -47,5 +38,5 @@ Files indicated in \code{runfiles} must be located in a folder named runDir.
 runDir <- "./run"
 flash <- "C:/FLASH/flash.exe"
 runfiles <- list.files(runDir)
-R1R2toFLASH(runfiles,flash,min.len=200,min.ov=20,max.ov=300,err.lv=0.10)
+R1R2toFLASH(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
 }
