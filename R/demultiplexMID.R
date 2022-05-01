@@ -54,6 +54,22 @@
 
 demultiplexMID <- function(flashffiles,samples,mids,maxdif=1,mid.start=1,mid.end=40){
 
+  # Si la ruta on es troben els fitxers flash no està ben especificada, intenta buscar la
+  # ruta correcta a partir del directori de treball
+  # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
+  if(length(flashfiles)==0) {
+    flashfiles <- list.files(paste(getwd(),"/flash",sep=''))
+    if(length(flashfiles)==0) {
+      stop("Couldn't find FLASH result files, please indicate correct path")
+    }
+  }
+
+  # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
+  # i mostra un missatge d'error
+  if(length(samples)==0||length(primers)==0) {
+    stop("Please check data folder files, something is missing")
+  }
+
   # Guarda la columna Pools (regions 5' o preS1). 'unique' per eliminar elements duplicats (només hi haurà 2)
   pools <- unique(samples$Pool.Nm)
 
@@ -163,7 +179,7 @@ for(i in 1:length(pools)) {
 # Guarda una nova columna a la taula de resultats on s'inclou el nº total de reads assignats a un MID
 # per pool
 by.pools$MIDReads <- tapply(nreads$Reads,factor(nreads$Pool.Nm,levels=pools),sum)
-
+# Borra els noms de les files de la taula nreads i guarda el resultat retornat per la funció
 rownames(nreads) <- NULL
 result <- list(nreads=nreads,by.pools=by.pools)
 
