@@ -34,7 +34,7 @@ demultiplexprimer(
 A list containing the following:
   \item{fileTable}{A table with relevant data of each FASTA file generated in execution,
     including their associated strand, mean read length, total reads and total haplotypes obtained.}
-  \item{poolTable}{A table with the number of total trimmed reads and the yield of the process for each pool.}
+  \item{poolTable}{A table with the number of total trimmed reads and the yield of the process by pool.}
 
   After execution, a FASTA file for each combination of strand, MID and pool will be saved in the trim folder,
   including its associated reads. Additionaly, some report files will be generated:
@@ -43,9 +43,11 @@ A list containing the following:
     for each sample (with their corresponding MID identifier).
   \item \code{AmpliconLengthsPlot.pdf}: Includes a barplot for each sample representing the amplicon
     lengths of both strands.
-  \item \code{SplitByPrimersOnFlash.txt}: .
-  \item \code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: .
-  \item \code{SplittedReadsFileTable.txt}: .}
+  \item \code{SplitByPrimersOnFlash.txt}: Includes a table of reads identified by primer, total reads identified by patient
+    and the yield by pool.
+  \item \code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: Includes some plots representing primer matches
+    by patient (in nº of reads) and the coverage of forward/reverse matches by pool.
+  \item \code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}
 }
 \description{
 Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.

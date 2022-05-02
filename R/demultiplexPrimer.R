@@ -28,7 +28,7 @@
 #' @return A list containing the following:
 #'   \item{fileTable}{A table with relevant data of each FASTA file generated in execution,
 #'     including their associated strand, mean read length, total reads and total haplotypes obtained.}
-#'   \item{poolTable}{A table with the number of total trimmed reads and the yield of the process for each pool.}
+#'   \item{poolTable}{A table with the number of total trimmed reads and the yield of the process by pool.}
 #'
 #'   After execution, a FASTA file for each combination of strand, MID and pool will be saved in the trim folder,
 #'   including its associated reads. Additionaly, some report files will be generated:
@@ -37,9 +37,11 @@
 #'     for each sample (with their corresponding MID identifier).
 #'   \item \code{AmpliconLengthsPlot.pdf}: Includes a barplot for each sample representing the amplicon
 #'     lengths of both strands.
-#'   \item \code{SplitByPrimersOnFlash.txt}: .
-#'   \item \code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: .
-#'   \item \code{SplittedReadsFileTable.txt}: .}
+#'   \item \code{SplitByPrimersOnFlash.txt}: Includes a table of reads identified by primer, total reads identified by patient
+#'     and the yield by pool.
+#'   \item \code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: Includes some plots representing primer matches
+#'     by patient (in nº of reads) and the coverage of forward/reverse matches by pool.
+#'   \item \code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}
 #'
 #' @import ShortRead
 #' @import Biostrings
@@ -127,7 +129,11 @@ for(i in 1:length(pools))
   # Guarda el noms dels fitxers de les mostres (MID) corresponents al pool avaluat
   flnms <- paste(pools[i],".MID",samples$MID[idx],".fna",sep="")
 
+  # Guarda el pool que s'està avaluant
   pool<-pools[i]
+  # La funció 'environment()' permet assignar totes les variables locals d'aquesta funció
+  # a la subfunció 'primermatch()' per tal d'evitar errors.
+  environment(primermatch) <- environment()
   # Aplica la funció 'primermatch()' del mateix paquet sobre cadascuna de les mostres
   # del pool avaluat
   foreach(j=1:length(idx)) %do% {primermatch(j,idx,flnms,pool)}
@@ -288,5 +294,8 @@ points(jitter(as.integer(factor(reg)),a=0.15),res.mat[,2],
 title(main="Primers identified on reverse reads")
 dev.off()
 
+# Borra les taules guardades a l'entorn global per evitar que augmenti la memòria d'execució, ja que estan
+# guardades a la variable results.
+rm(FlTbl,PoolTbl,pr.res,envir = globalenv())
 return(result)
 }
