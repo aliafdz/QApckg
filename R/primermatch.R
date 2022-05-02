@@ -1,6 +1,24 @@
+#' primermatch
+#'
+#' Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
+#'
+#' This function is only defined for correct execution of \code{\link{demultiplexprimer}} function from the same package, so it
+#'   cannot be executed individually.
+#'
+#' @param j Integer corresponding to the sample (element in \code{idx}) to be evaluated.
+#' @param idx Vector with index of samples to be evaluated (for one pool).
+#' @param flnms Vector including the names of demultiplexed files by MID, with fna extension, corresponding to the evaluated samples.
+#' @param pool Character with the name of sample pool.
+#' @return This function requires the result tables named \code{FlTbl, PoolTbl} and \code{pr.res} that will be filled with the data collected
+#'   from the evaluated sample. This results will be further evaluated in \code{\link{demultiplexprimer}} parent function.
+#' @import QSutils
+#' @import ShortRead
+#' @import Biostrings
+#' @seealso \code{\link{demultiplexprimer}}
+#' @export
 
 primermatch <- function(j,idx,flnms,pool){
-  with(parent.frame(), {
+
   # Guarda l'index de la mostra avaluada
   jj <- idx[j]
 
@@ -306,5 +324,5 @@ primermatch <- function(j,idx,flnms,pool){
 pr.res<<-pr.res
 FlTbl<<-FlTbl
 PoolTbl<<-PoolTbl
-})
+
 }
