@@ -62,9 +62,9 @@ muscle.cl.opts <- c("-log muscle.log")
 
 doMuscle <- function(seqs)
 { # Genera un fitxer al directori tmp per introduir les seqüències a alinear
-  tmp.file <- file.path(tmp.Dir,"muscleInFile.fna")
+  tmp.file <- file.path(tempDir,"muscleInFile.fna")
   # Genera el fitxer al directori tmp que resultarà de l'alineament amb muscle
-  res.file <- file.path(tmp.Dir,"muscleOutFile.fna")
+  res.file <- file.path(tempDir,"muscleOutFile.fna")
   # Si ja existeix l'arxiu de resultats, s'elimina per generar-lo de nou
   if(file.exists(res.file)) file.remove(res.file)
   # Aplica la funció d'abans per escriure el fitxer fasta d'entrada amb les seqüències de l'argument
@@ -299,15 +299,14 @@ SaveHaplotypes <- function(flnm,bseqs,nr,max.difs=250)  #,seq0)
 
 #-------------------------------------------------------------------#
 
-#' conshaplotypes
+#' ConsHaplotypes
 #'
-#' fitxer rawconshaplos
+#' Consensus haplotypes by multiple alignment
 #'
 #' @param thr Minimum threshold of abundance to enter in multiple alignment.
 #' @param min.seq.len Minimum length of sequences to enter in intersection.
 #' @param min.rd Minimum nº of reads required in fasta files.
-#' @param fileTable Data frame ...
-#' @param poolTable Data frame ...
+#' @param pm.res List... resultat de la funció anterior
 #'
 #' @import Biostrings
 #' @import ape
@@ -318,12 +317,12 @@ SaveHaplotypes <- function(flnm,bseqs,nr,max.difs=250)  #,seq0)
 #'
 #' @export
 
-conshaplotypes <- function(samples, primers, thr, min.seq.len,min.rd,fileTable,poolTable){
+conshaplotypes <- function(samples, primers, thr, min.seq.len,min.rd,pm.res){
 ## No cal introduir els arxius fasta de la carpeta trim perquè es treuen de la taula fileTable de la funció anterior.
-# En lloc de carregar el RData es carreguen les taules fileTable i poolTable.
+# En lloc de carregar el RData es carreguen les taules fileTable i poolTable de la variable de la funció anterior.
 
-  FlTbl<- fileTable
-  PoolTbl<- poolTable
+  FlTbl<- pm.res$fileTable
+  PoolTbl<- pm.res$poolTable
 
 
 # Retorna els indexs de la taula FlTbl derivats d'ordenar les mostres en funció de l'ID del
@@ -383,62 +382,72 @@ for(i in 1:n)
   if(!file.exists(in.files[idx.fw[i]])) next
   if(!file.exists(in.files[idx.rv[i]])) next
 
-  ## Filtrat implícit per mnr = min.rd (mínim nombre de reads, definit al fitxer de paràmetres)
-  # Aplica la funció definida al principi per obtenir els haplotips del fitxer .fna avaluat,
-  # en concret pels haplotips de la cadena forward
-  lst1 <- read.ampl.seqs(in.files[idx.fw[i]],mnr=min.rd)
-  # Guarda el vector que inclou el nº de seqüències o reads dels haplotips
-  nr1 <- lst1$IDs$nseqs
-  # Guarda les seqüències dels haplotips amb més reads del mínim permès
-  seqs <- lst1$seqs
-  ## Guarda les seqüències de longitud major al mínim permès (definit al fitxer de paràmetres)
-  fl <- nchar(seqs) >= min.seq.len
+  # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
+  # seves freqüències a partir d'un fitxer fasta indicat.
+  lstf <- ReadAmplSeqs(in.files[idx.fw[i]])
+  # Guarda les seqüències de longitud major al mínim permès i filtra el nº de reads
+  # eliminant els de les seqüències que presenten longitud menor al mínim permès
+  lstf$nr <- lstf$nr[nchar(lstf$hseqs) >= min.seq.len]
+
+  # Aplica la funció 'GetQSData()' del paquet QSutils per llegir els amplicons del
+  # fitxer amb els valores d'abundància, filtrar per mínima abundància i ordenar
+  # segons les mutacions.
+  s1 <- GetQSData(in.files[idx.fw[i]],a.cut)
+  # Guarda les seqüències de longitud major al mínim permès
+  ffilt <- nchar(s1$seqs) >= min.seq.len
   # Filtra les seqüències per eliminar les que presenten longitud menor al mínim permès
-  nr1 <- nr1[fl]
-  seqs <- seqs[fl]
-  ## Filtrar per mínima abundància
-  # a.cut (definit al fitxer principal) correspon al min d'abundancia per entrar
-  # en l'aliniament múltiple (%)
-  # Guarda les seqüències que presenten una abundància major al mínim permès (en aquest cas 0,2)
-  fl1 <- nr1/sum(nr1)*100 >= a.cut
+  seqsf <- s1$seqs[ffilt]
+  nrf <- s1$nr[ffilt]
+
+  # Calcula la freqüència relativa de cada amplicó filtrat per abundància respecte el total
+  # de reads del fitxer inicial.
+  frq_lst <- round(nrf/sum(lstf$nr)*100,2)
+  # Donat que la funció del paquet QSutils retorna els noms dels haplotips diferent al desitjat, es canvien els
+  # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer fasta amb nom de l'haplotip,
+  # nombre de reads i freq relativa. També es substitueix el terme Hpl per HplFw amb la funció 'gsub()'.
+  names(seqsf) <- paste(gsub("Hpl","HplFw",gsub('_','.',names(seqsf))),nrf,frq_lst,sep="|")
+
   ## Guarda a la taula de resultats per a cadenes fw:
   # El total de reads de la mostra avaluada
-  rdf.fw$fw.all[i]  <- sum(nr1)
+  rdf.fw$fw.all[i]  <- sum(lstf$nr)
   # El nº de reads amb baixa freqüència (menor al mínim permès)
-  rdf.fw$fw.lowf[i] <- sum(nr1[!fl1])
-  # Filtra les seqüències per eliminar les que presenten freq menor a la mínima permesa
-  seqs <- seqs[fl1]
-  # Substitueix amb la funció 'sub()' el terme Hpl per HplFw en els noms de les seqüències
-  # de la mostra avaluada
-  names(seqs) <- sub("Hpl","HplFw",names(seqs))
-  # Renom de la variable
-  aseqs <- seqs
-  # Guarda la longitud del primer haplotip de la mostra
-  rawln <- nchar(seqs[1])
+  rdf.fw$fw.lowf[i] <- sum(lstf$nr)-sum(nrf)
 
   ## Aplica el mateix procés per a les cadenes classificades reverse de la mostra avaluada
-  ## Filtrat implicit per mnr = min.rd
-  # Aplica la funció definida al principi per obtenir els haplotips del fitxer .fna avaluat,
-  # en aquest cas dels haplotips de la cadena reverse de la mateixa mostra avaluada
-  lst2 <- read.ampl.seqs(in.files[idx.rv[i]],mnr=min.rd)
-  nr2 <- lst2$IDs$nseqs
-  seqs <- lst2$seqs
-  ## Eliminar les seqüències més curtes del mínim permès
-  fl <- nchar(seqs) >= min.seq.len
-  nr2 <- nr2[fl]
-  seqs <- seqs[fl]
-  ## Filtrar per mínima abundància
-  fl2 <- nr2/sum(nr2)*100 >= a.cut
-  ## Afegeix els resultats a la taula per cadenes reverse
-  rdf.rv$rv.all[i]  <- sum(nr2)
-  rdf.rv$rv.lowf[i] <- sum(nr2[!fl2])
-  seqs <- seqs[fl2]
-  names(seqs) <- sub("Hpl","HplRv",names(seqs))
 
-  ## Afegeix a la variable d'abans (amb les cadenes fw) les cadenes rv filtrades
-  aseqs <- c(aseqs,seqs)
-  # Guarda l'identificador del primer emprat per a l'amplificació de la mostra avaluada
-  ipr <- FlTbl$Pr.ID[idx.fw[i]]
+  # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
+  # seves freqüències a partir d'un fitxer fasta indicat.
+  lstr <- ReadAmplSeqs(in.files[idx.rv[i]])
+  # Guarda les seqüències de longitud major al mínim permès i filtra el nº de reads
+  # eliminant els de les seqüències que presenten longitud menor al mínim permès
+  lstr$nr <- lstr$nr[nchar(lstr$hseqs) >= min.seq.len]
+
+  # Aplica la funció 'GetQSData()' del paquet QSutils per llegir els amplicons del
+  # fitxer amb els valores d'abundància, filtrar per mínima abundància i ordenar
+  # segons les mutacions.
+  s2 <- GetQSData(in.files[idx.rv[i]],a.cut)
+  # Guarda les seqüències de longitud major al mínim permès
+  rfilt <- nchar(s2$seqs) >= min.seq.len
+  # Filtra les seqüències per eliminar les que presenten longitud menor al mínim permès
+  seqsr <- s2$seqs[rfilt]
+  nrr <- s2$nr[rfilt]
+
+  # Calcula la freqüència relativa de cada amplicó filtrat per abundància respecte el total
+  # de reads del fitxer inicial.
+  frq_lst <- round(nrr/sum(lstr$nr)*100,2)
+  # Donat que la funció del paquet QSutils retorna els noms dels haplotips diferent al desitjat, es canvien els
+  # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer fasta amb nom de l'haplotip,
+  # nombre de reads i freq relativa. També es substitueix el terme Hpl per HplFw amb la funció 'gsub()'
+  names(seqsr) <- paste(gsub("Hpl","HplRv",gsub('_','.',names(seqsr))),nrr,frq_lst,sep="|")
+
+  ## Guarda a la taula de resultats per a cadenes rv:
+  # El total de reads de la mostra avaluada
+  rdf.rv$rv.all[i]  <- sum(lstr$nr)
+  # El nº de reads amb baixa freqüència (menor al mínim permès)
+  rdf.rv$rv.lowf[i] <- sum(lstr$nr)-sum(nrr)
+
+  # Guarda en un vector les seqs de les dues cadenes
+  aseqs <- c(seqsf,seqsr)
 
 
   ###  Aliniament múltiple per muscle dels haplotips fw i rv
@@ -446,7 +455,7 @@ for(i in 1:n)
   seqs <- doMuscle(DNAStringSet(aseqs))
   # Copia el fitxer resultant de l'aliniament múltiple al directori MACH per guardar l'aliniament
   # dels haplotips de la mostra avaluada
-  file.copy(file.path(tmp.Dir,"muscleOutFile.fna"),ma.flnms[i],
+  file.copy(file.path(tempDir,"muscleOutFile.fna"),ma.flnms[i],
             overwrite=TRUE)
 
   # Aplica la funció per obtenir els noms dels haplotips i les seves dades
