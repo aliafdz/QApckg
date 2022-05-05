@@ -1,325 +1,70 @@
-############################################################
-###    RAW CONSENSUS HAPLOTYPES by MULTIPLE ALIGNMENT    ###
-############################################################
-
-
-### Funció per separar els noms dels haplotips amb el recompte de reads i la freqüència
-split.fasta.names <- function(seqs,mnr=2)
-{ # Guarda els noms assignats a les seqüències de l'objecte DNAStringSet de l'argument
-  IDstr <- names(seqs)
-  # Guarda el total de noms assignats del pas anterior, és a dir el total d'haplotips
-  n <- length(IDstr)
-  # Guarda un vector buit amb tantes entrades com haplotips
-  nms <- character(length=n)
-  # Guarda una matriu buida amb n files (1 per haplotip) i dues columnes, definides amb
-  # 'colnames()', on es guardaran en nº de reads de l'haplotip i la seva freqüència
-  sts <- matrix(0,nrow=n,ncol=2)
-  colnames(sts) <- c("nseqs","pct1")
-  # Iteració sobre el total d'haplotips del fitxer avaluat
-  for(j in 1:n)
-  { # Separa el nom de l'identificador de l'haplotip, que inclou 3 elements:
-    # 1) Nº de mutacions i ordre de l'haplotip dins del grup amb aquestes mutacions
-    # 2) Nº de reads de l'haplotip
-    # 3) Freq relativa dins de la mostra
-    strs <- strsplit(IDstr[j],split="\\|")[[1]]
-    # Guarda a la taula nms el primer element de l'identificador de l'haplotip corresponent
-    nms[j] <- strs[1]
-    # Guarda a la 1a i 2a columna de la taula sts el 2n i 3r elements de l'identificador
-    sts[j,] <- as.numeric(strs[2:3])
-  }
-  # Guarda en un data frame els 3 elements de l'identificador de tots els haplotips separats per
-  # columnes
-  # NOTA: es podria simplificar per tal de guardar les variables directament a partir del bucle?
-  IDs <- data.frame(ID=nms,sts,stringsAsFactors=FALSE)
-  # Guarda el nº de files del data frame (total d'haplotips)
-  nall <- nrow(IDs)
-  # Realitza el sumatori de la columna amb el nº de reads per haplotip
-  tnr <- sum(IDs$nseqs)
-  # Guarda el nº de reads majors al valor definit de minim nombre de reads
-  flags <- IDs$nseqs >= mnr
-  # Retorna una llista amb un subset dels haplotips que presentin un nº de reads major al mínim definit,
-  # les seqüències dels haplotips que compleixen la condició, el nº de total d'haplotips i el sumatori de reads
-  return(list(IDs=IDs[flags,],seqs=seqs[flags],nall=nall,tnr=tnr))
-}
-
-
-### Funció per llegir els .fna amb els amplicons ja classificats i sense primers
-read.ampl.seqs <- function(flnm,mnr=2)
-{ # Guarda les seqüències del fitxer fasta de l'argument obtingudes amb la funció 'readDNAStringSet()'
-  seqs <- as.character(readDNAStringSet(flnm))
-  # Aplica la funció definida anteriorment per obtenir tots els noms dels haplotips amb un nº de reads
-  # major al mínim definit i les seves dades
-  return(split.fasta.names(seqs,mnr)) # NOTA: es podrien fusionar les 2 funcions?
-}
-
-
-###  Funció per a l'aliniament múltiple amb muscle de les seqs
-###  Les seqüècies s'entren i es tornen com a DNAStringSet
-# Guarda la ruta de l'executable muscle (aquest es posarà al fitxer global)
-muscle <- "C:\\Muscle\\muscle3.8.31_i86win32.exe"
-# Guarda el nom del fitxer d'opcions de muscle que es guardarà a l'entorn global del projecte
-muscle.cl.opts <- c("-log muscle.log")
-
-doMuscle <- function(seqs)
-{ # Genera un fitxer al directori tmp per introduir les seqüències a alinear
-  tmp.file <- file.path(tempDir,"muscleInFile.fna")
-  # Genera el fitxer al directori tmp que resultarà de l'alineament amb muscle
-  res.file <- file.path(tempDir,"muscleOutFile.fna")
-  # Si ja existeix l'arxiu de resultats, s'elimina per generar-lo de nou
-  if(file.exists(res.file)) file.remove(res.file)
-  # Aplica la funció d'abans per escriure el fitxer fasta d'entrada amb les seqüències de l'argument
-  writeXStringSet( seqs, tmp.file )
-  # Genera els fitxers in i out per a executar muscle
-  in.file <- paste("-in ",tmp.file,sep="")
-  out.file <- paste("-out ",res.file,sep="")
-  # Genera la comanda per executar muscle amb el fitxer .exe, els arxius in i out i el fitxer d'opcions
-  command <- paste(muscle,in.file,out.file,
-                   paste(muscle.cl.opts,collapse=" "),sep=" ")
-  # Empra la funció 'system()' per executar la comanda indicada abans i fer l'aliniament múltiple
-  system(command,intern=FALSE,wait=TRUE,show.output.on.console=FALSE,
-         ignore.stdout=FALSE,invisible=TRUE)
-  # Retorna el fitxer de resultats com a objecte DNAStringSet gràcies a la funció de llegir arxius fasta
-  if( file.exists(res.file) )
-    return( readDNAStringSet(res.file) )
-  return(NULL)
-}
-
-
-### Alinear les distribucions d'haplotips de dues poblacions
-# Els arguments de la funció corresponen al nº de reads dels haplotips FW o RV (nA o nB)
-# i les seqüències en si (seqsA i seqsB)
-PopsAlgnHist <- function(nA,seqsA,nB,seqsB)
-{ # Relaciona les seqüències dels haplotips FW (A) i RV (B) amb el seu nº de reads
-  names(nA) <- seqsA
-  names(nB) <- seqsB
-  # Combina les dades dels dos conjunts de seqüències, eliminant aquelles que estiguin duplicades entre les cadenes
-  nms <- union(seqsA,seqsB) # tots: A + B
-  # Guarda la longitud (nº de seqs) de la nova combinació -> No correspon a la suma de seqsA i seqsB perquè elimina els duplicats
-  nb <- length(nms)
-  # Guarda un vector buit de longitud igual al nº de seqüències totals, per guardar les coincidències amb FW
-  pA <- integer(nb)
-  # Indica els indexs d'haplotips FW dins del conjunt global
-  idx <- which(nms %in% seqsA)
-  # Tenint en compte els indexs obtinguts, assigna el nº de reads dels haplotips FW en les seves corresponents posicions
-  pA[idx] <- nA[nms[idx]]
-  # Guarda un vector buit de longitud igual al nº de seqüències totals, per guardar les coincidències amb RV
-  pB <- integer(nb)
-  # Indica els indexs d'haplotips RV dins del conjunt global
-  idx <- which(nms %in% seqsB)
-  # Tenint en compte els indexs obtinguts, assigna el nº de reads dels haplotips RV en les seves corresponents posicions
-  # Si ara es compara pA i pB, les posicions on hi ha més de 0 reads en ambdòs vectors corresponen als haplotips coincidents!
-  pB[idx] <- nB[nms[idx]]
-  # Genera una llista amb el nº de seqs dels haplotips FW i RV, i també el conjunt global amb totes les seqs
-  # IMPORTANT! En aquest pas encara no s'ha fet la intersecció per aliniament
-  list(pA=pA,pB=pB,Hpl=nms)
-}
-
-
-### Confrontació d'haplotips FW i RV
-# Els arguments de la funció corresponen al nº de seqüències dels haplotips FW o RV (nA o nB)
-# i les seqüències en si (seqsA i seqsB)
-Intersect.FWRV <- function(nA,seqsA,nB,seqsB)
-{ ### Aliniament de distribucions
-  # Aplica la funció d'abans per obtenir el conjunt de totes les seqs d'haplotips FW i RV i el seu nº de reads
-  lst <- PopsAlgnHist(nA,seqsA,nB,seqsB)
-
-  ### Haplotips comuns i solapament global
-  # Indica en quins casos coincideixen les seqs dels haplotips FW i RV, ja que seran els indexs on el nº de reads
-  # per A i per B sigui major a 0
-  fl <- lst$pA>0 & lst$pB>0
-  # sum(lst$pA+lst$pB) correspon al total de reads d'ambdues cadenes que han entrat a la intersecció després del filtre per abundància
-  # sum(lst$pA[fl]+lst$pB[fl]) correspon al total de reads que coincideixen en FW i RV
-  # Per tant, el resultat de ov.a és la fracció de reads comuns entres les cadenes respecte el total
-  # Es considera que el sumatori de reads en ambdues cadenes correspon a la cobertura de l'amplicó
-  ov.a <- sum(lst$pA[fl]+lst$pB[fl])/sum(lst$pA+lst$pB)
-
-  ### Freqüències i solapament per intersecció
-  # Calcula la freq relativa (nº de reads d'un haplotip entre el total dels que entraven a la intersecció d'aquella cadena)
-  # per aquells haplotips coincidents en ambdues cadenes
-  pFW <- (lst$pA/sum(lst$pA))[fl]
-  pRV <- (lst$pB/sum(lst$pB))[fl]
-  # Indica el valor mínim de freq al comparar cada parella d'haplotips coincidents -> freq mínima d'intersecció
-  p <- pmin(pFW,pRV)
-  # Calcula el sumatori de tots els valors mínims de freq calculats entre les parelles coincidents
-  # Aquest valor correspondrà al percentatge de superfície que solapa entre ambdues cadenes
-  ov.i <- sum(p)
-  # Ara renormalitza les dades dividint cada valor mínim de freq entre el sumatori de totes
-  p <- p/sum(p)
-  ## Retorna una llista que inclou, en ordre:
-  # 1) Freq relatives dels haplotips normalitzades
-  # 2) Seqüències dels haplotips coincidents en FW i RV
-  # 3) Total de superfície que solapa entre ambdues cadenes
-  # 4) Fracció de reads comuns entre les cadenes respecte el total
-  # 5) Vector amb el nº de seqs dels haplotips FW que entraven a la intersecció (després de filtrar per abundància)
-  # 6) Vector amb el nº de seqs dels haplotips RV que entraven a la intersecció
-  list(p=p,seqs=lst$Hpl[fl],ov.i=ov.i,ov.a=ov.a,pA=lst$pA,pB=lst$pB)
-}
-
-
-### Funció per representar les distribucions aliniades dels haplotips
-PlotHplHistos <- function(tt,pA,pB,p)
-{ # Divideix el nº de seqs de cada haplotip de la cadena FW entre el total dels que entraven a la intersecció
-  pA <- pA/sum(pA)
-  # Divideix el nº de seqs de cada haplotip de la cadena RV entre el total
-  pB <- pB/sum(pB)
-  # Defineix el límit de l'eix Y en funció de les freqüències calculades
-  ymx <- max(c(pA,pB))
-  # Gràfic de barres per representar els haplotips de la cadena FW i la seva freq relativa
-  barplot(pA,ylim=c(0,ymx)); abline(h=0)
-  title(main="FW strand haplotypes barplot",line=0.5,cex.main=1)
-  title(sub=tt,line=0.5,cex.main=1)
-  # Gràfic de barres per representar els haplotips de la cadena RV i la seva freq relativa
-  barplot(pB,ylim=c(0,ymx)); abline(h=0)
-  title(main="RV strand haplotypes barplot",line=0.5,cex.main=1)
-  title(sub=tt,line=0.5,cex.main=1)
-  # Gràfic de barres per representar els haplotips coincidents en ambdues cadenes i la seva freq
-  barplot(p); abline(h=0)
-  title(main="Intersected haplotypes barplot",line=0.5,cex.main=1)
-  title(sub=tt,line=0.5,cex.main=1)
-}
-
-
-
-### Dóna nom als haplotips en funció del nombre de mutacions respecte la màster
-### i de la seva frequencia poblacional, i salva les seqüències en un fitxer fasta.
-# Els arguments corresponen al nom del fitxer on es desaran els resultats, les seqs
-# dels haplotips coincidents en ambdues cadenes, el sumatori de reads per haplotip coincident
-# i el nº màxim de diferències permeses
-SaveHaplotypes <- function(flnm,bseqs,nr,max.difs=250)  #,seq0)
-{
-  ## Si només hi ha un haplotip coincident:
-  if(length(bseqs)==1)
-  { # Separa la seqüència per nucleòtids
-    bnts <- strsplit(bseqs[1],split="")[[1]]
-    # Guarda únicament els nucleòtids de la seqüència, elimina els gaps (-)
-    bnts <- bnts[bnts!="-"]
-    # Torna a generar la seqüència de DNA tornant a unir els nucleòtids
-    bseqs <- paste(bnts,collapse="")
-    # Assigna a la seq el nom corresponent: haplotip nº1 amb 0 mutacions, indicant el nº de reads,
-    # i la freq serà del 100% (perquè només queda 1 haplotip)
-    names(bseqs) <- paste("Hpl.0.0001",nr,100,sep="|")
-    # Guarda la seq en un fitxer fasta en la ruta indicada en l'argument de la funció
-    writeXStringSet(DNAStringSet(bseqs),flnm)
-    # Retorna una llista amb la seqüència i el nº de reads de l'haplotip
-    return( list(bseqs=bseqs,nr=nr,nm=0) )
-  }
-
-  ## Determinar diferències respecte la seqüència (haplotip) màster
-  # bseqs[which.max(nr)] permet assignar la màster com l'haplotip amb major nº de reads
-  psa <- pairwiseAlignment(pattern=bseqs,subject=bseqs[which.max(nr)])
-  # Guarda el nº de diferències obtingudes dels aliniaments
-  nm <- nmismatch(psa)
-
-  ## Elimina les seqs amb massa diferències respecte la màster
-  # Subset de seqüències d'haplotip que tenen un nombre de diferències menor al màxim permès
-  bseqs <- bseqs[nm<=max.difs]
-  # També actualitza el nº de reads només dels haplotips amb menys diferències del màxim permès
-  nr <- nr[nm<=max.difs]
-  # Elimina les dades dels aliniaments amb major nº de diferències del permès
-  nm <- nm[nm<=max.difs]
-
-  # Si després d'eliminar els haplotips amb múltiples diferències només en queda un, realitza el procés
-  # del principi per guardar aquella seqüència en el fitxer fasta
-  if(length(bseqs)==1)
-  { bnts <- strsplit(bseqs[1],split="")[[1]]
-  bnts <- bnts[bnts!="-"]
-  bseqs <- paste(bnts,collapse="")
-  names(bseqs) <- paste("Hpl.0.0001",nr,100,sep="|")
-  writeXStringSet(DNAStringSet(bseqs),flnm)
-  return( list(bseqs=bseqs,nr=nr,nm=0) )
-  }
-
-  ## Ordenar per nombre de diferències
-  # Ordena el nombre de mutacions respecte la màster en ordre ascendent
-  o <- order(nm)
-  # Ordena les seqs segons el seu nº de mutacions respecte la màster
-  bseqs <- bseqs[o]
-  # Ordena també les freqüències (reads) segons el nº de mutacions de la seqüència
-  nr <- nr[o]
-  # Ordena la variable amb el nº de mismatches segons les mutacions (ordre ascendent)
-  nm <- nm[o]
-
-  ## Numero d'ordre dins de cada nombre de mutacions:
-  # Guarda les vegades que apareix cada nº de mismatches
-  tnm <- table(nm)
-  # length(tnm) calcula el nº d'agrupacions de la taula tnm, és a dir el nº màxim de mutacions que s'han trobat
-  # 1:tnm[i] s'aplica sobre els valors de 1 fins al total de mutacions trobades. Per cada nº de mutacions, retorna un
-  # conjunt de nombres que van de l'1 al total de vegades que s'ha donat aquell nº de mutacions
-  # 'unlist()' concatena tots els valors per tots el nº de mutacions
-  isq <- unlist(sapply(1:length(tnm),function(i) 1:tnm[i]))
-
-  ## Ordena per freqüència descendent dins de cada nombre de mutacions:
-  # as.integer(names(tnm)) retorna els valors de 1 fins al total de mutacions trobades
-  for(i in as.integer(names(tnm)))
-  { # Indexs de les seqüències que presenten aquell nº de mutacions (i) respecte la màster
-    idx <- which(nm==i)
-    # Pels valors de freqüència pertanyents a les seqs amb 'i' mutacions, retorna la seva posició
-    # assignada en ordenar-les en ordre descendent
-    o <- order(nr[idx],decreasing=TRUE)
-    # Ordena les seqüències amb 'i' mutacions segons freq en ordre descendent
-    bseqs[idx] <- bseqs[idx[o]]
-    # Ordena les freqüències de les seqs amb 'i' mutacions en ordre descendent
-    nr[idx] <- nr[idx[o]]
-  }
-
-  ## Calcula la freqüència relativa dels haplotips coincidents en FW i RV
-  frq <- round(nr/sum(nr)*100,2)
-
-  ## Nom complet per cada haplotip
-  # Defineix el nom que rebrà cadascun dels haplotips coincidents en les cadenes
-  # nm= mutacions respecte seq màster
-  nms <- paste("Hpl", nm, sprintf("%04d",isq), sep=".")
-
-  ## Genera la capçalera fasta amb el nom de l'haplotip, nombre de reads i freq relativa
-  names(bseqs) <- paste(nms,nr,frq,sep="|")
-
-  ###  Afegir-hr la RefSeq -> no s'executa
-  #bseqs <- c(seq0,bseqs)
-
-  ### Eliminar columnes de tot gaps
-  # Per cadascuna de les seqs dels haplotips coincidents, aplica la funció 'strsplit()' per
-  # separar-les per nucleòtids
-  nuc.mat <- t(sapply(bseqs,function(s) strsplit(s,split="")[[1]]))
-  # Guarda els gaps de totes les seqüències
-  fl <- apply(nuc.mat,2,function(st) all(st=="-"))
-  # Si es troba algun gap,
-  if(sum(fl))
-  { # Guarda només els nucleòtids sense gaps
-    nuc.mat <- nuc.mat[,!fl]
-    # Torna a ensamblar els nucleòtids per generar les seqs de DNA
-    bseqs <- apply(nuc.mat,1,paste,collapse="")
-  }
-
-  ## Genera el fitxer fasta amb els haplotips que han coincidit i sense gaps
-  writeXStringSet(DNAStringSet(bseqs),flnm)
-  # Retorna una llista amb les seqs dels haplotips coincidents, el nº de reads i el nº de mutacions
-  return(list(bseqs=bseqs,nr=nr,nm=nm))
-}
-
-
-#-------------------------------------------------------------------#
-
 #' ConsHaplotypes
 #'
-#' Consensus haplotypes by multiple alignment
 #'
-#' @param thr Minimum threshold of abundance to enter in multiple alignment.
-#' @param min.seq.len Minimum length of sequences to enter in intersection.
-#' @param min.rd Minimum nº of reads required in fasta files.
-#' @param pm.res List... resultat de la funció anterior
+#' Archivos almacenados en la carpeta global del proyecto: “muscle.log”. Es el archivo donde se guardan los
+#' parámetros de la ejecución de muscle.
+#' Archivos almacenados en la carpeta reports: "IntersectBarplots.pdf", "IntersectedReads.RData",
+#' "MA.Intersects.plots.pdf", "MA.Intersects-SummRprt.txt".
+#' Archivos almacenados en la carpeta tmp: “muscleInFile.fna”, “muscleOutFile.fna”. Se generan al ejecutar el
+#' programa muscle, son los archivos de entrada y salida del programa.
+#' Archivos almacenados en la carpeta MACH: 4 archivos .fna por paciente (2 por pool) →
+#' los que empiezan por MAfwrv corresponden a los resultados del alineamiento múltiple (muscle) de los haplotipos
+#' de cada muestra (forward y reverse) después de realizar el filtro por abundancia de 0.2%; los que empiezan por
+#' MACHpl02 se generan después de hacer la intersección entre cadenas FW y RV, incluyen las secuencias fasta de los
+#' haplotipos que han coincidido entre las cadenas.
+
+#'
+#' Computes the intersection of forward and reverse strand haplotypes and generates some report files.
+#'
+#' This function is designed to be used after the execution of \code{\link{demultiplexprimer}} function
+#'   from the same package. After the generation of fasta files containing forward and reverse strand reads
+#'   for the evaluated samples, \code{\link{ConsHaplotypes}} executes multiple alignment with \code{\link{muscle}} and
+#'   returns the consensus haplotypes with \code{\link{IntersectStrandHpls}}.
+#'
+#' @param pm.res The list returned by \code{\link{demultiplexprimer}}, including \code{fileTable}
+#'   and \code{poolTable} data frames.
+#' @param thr Threshold to filter haplotypes at minimum abundance before intersection.
+#' @param min.seq.len Threshold to filter haplotypes at minimum length before intersection.
+#'
+#' @return The function returns a \code{\link{data.frame}} object containing the intersection results
+#'   for each combination of patient and pool, including the initial number of reads, filtered out reads
+#'   (for being below a given frequency threshold or unique to a single strand), overlapping frequency
+#'   between both strands and the common reads (in percentage and nº of reads).
+#'
+#'   After execution, two fasta files for each combination of sample and pool will be saved in the MACH folder;
+#'   the first includes multiple alignment between forward and reverse strand haplotypes, and the second
+#'   includes the forward and reverse strands intersected. Additionaly, some report files will be generated:
+#'   \enumerate{
+#'   \item \code{MA.Intersects-SummRprt.txt}: Includes the sumary results by reads number after abundance filter and
+#'     strand intersection.
+#'   \item \code{MA.Intersects.plots.pdf}: Includes different barplots for each sample representing the frequency of
+#'     forward, reverse and intersected strand haplotypes.
+#'   \item \code{IntersectBarplots.pdf}: Includes different barplots for all combinations of patient and pool,
+#'     representing the number of intersected and filtered out reads, the intersection yield and global yield.}
+#'
 #'
 #' @import Biostrings
 #' @import ape
 #' @import QSutils
+#' @import parallel
 #' @importFrom muscle muscle
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom methods as
+#' @importFrom methods is
+#' @importFrom stats quantile
+#' @seealso \code{\link{muscle}}
 #' @examples
+#' # Apply previous function from QA analysis
+#' pm.res <- demultiplexprimer(splitfiles,samples,primers)
+#' # Define necessary parameters
 #' min.seq.len <- 150
 #' min.rd <-   1
 #' thr <- 0.2
+#' ConsHaplotypes(pm.res, thr, min.seq.len)
 #'
 #' @export
 
-conshaplotypes <- function(samples, primers, thr, min.seq.len,min.rd,pm.res){
+ConsHaplotypes <- function(pm.res,thr, min.seq.len){
 ## No cal introduir els arxius fasta de la carpeta trim perquè es treuen de la taula fileTable de la funció anterior.
 # En lloc de carregar el RData es carreguen les taules fileTable i poolTable de la variable de la funció anterior.
 
@@ -378,11 +123,11 @@ pdf(file.path(repDir,"MA.Intersects.plots.pdf"),paper="a4",
     width=7,height=11)
 par(mfrow=c(3,1))
 
-# Bucle for per iterar sobre totes les mostres (2 per pacient)
-for(i in 1:n)
-{ # Si no existeix el fitxer de la mostra avaluada a la carpeta trim, torna a començar la iteració següent
-  if(!file.exists(in.files[idx.fw[i]])) next
-  if(!file.exists(in.files[idx.rv[i]])) next
+# Bucle amb paralelització per iterar sobre totes les mostres (2 per pacient)
+mclapply(n, function(i){
+  # Si no existeix el fitxer de la mostra avaluada a la carpeta trim, torna a començar la iteració següent
+  if(!file.exists(in.files[idx.fw[i]])) i=i+1
+  if(!file.exists(in.files[idx.rv[i]])) i=i+1
 
   # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
   # seves freqüències a partir d'un fitxer fasta indicat.
@@ -475,6 +220,25 @@ for(i in 1:n)
   # Aplica la funció del paquet QSutils que permet calcular la intersecció entre els haplotips
   lstI<-IntersectStrandHpls(nr[ifw],ma_seqs[ifw],nr[irv],ma_seqs[irv],thr=0)
 
+  # Per obtenir realment les seqs coincidents entre ambdues cadenes cal afegir el codi següent:
+  # A partir dels vectors d'abundància de les cadenes forward i reverse aliniades, indica
+  # en quins casos coincideixen les seqs, ja que seran els indexs on el nº de reads
+  # per FW i per RV sigui major a 0
+  fl <- lstI$pFW > 0 & lstI$pRV > 0
+  # Combina les dades dels dos conjunts de seqüències, eliminant aquelles que estiguin duplicades entre les cadenes
+  # (només apareixeran un cop)
+  nms <- union(ma_seqs[ifw],ma_seqs[irv])
+  # Filtra les seqüències dels haplotips coincidents en FW i RV
+  hseqs <- nms[fl]
+  # Calcula l'abundància (nº reads) dels haplotips en ambdues cadenes
+  nr <- lstI$pFW[fl]+lstI$pRV[fl]
+  # Ordena les abundàncies en ordre decreixent
+  o <- order(nr, decreasing = TRUE)
+  # Reordena les seqs en funció de la seva abundància
+  hseqs=hseqs[o]
+  # Reordena els valors d'abundància segons els indexs obtinguts
+  nr=nr[o]
+
   # Calcula la freq relativa (nº de reads d'un haplotip entre el total dels que entraven a la intersecció d'aquella cadena)
   # per aquells haplotips coincidents en ambdues cadenes, i indica el valor mínim de freq al comparar cada parella d'haplotips
   # coincidents -> freq mínima d'intersecció
@@ -485,31 +249,31 @@ for(i in 1:n)
   rdf.fw$fw.in[i]  <- sum(lstI$pFW)
   rdf.rv$rv.in[i]  <- sum(lstI$pRV)
   # El nº de reads dels haplotips coincidents entre ambdues cadenes
-  rdf.fw$fw.com[i] <- sum(lstI$pFW[lstI$pRV!=0])
-  rdf.rv$rv.com[i] <- sum(lstI$pRV[lstI$pFW!=0])
+  rdf.fw$fw.com[i] <- sum(lstI$pFW[fl])
+  rdf.rv$rv.com[i] <- sum(lstI$pRV[fl])
   # El nº de reads dels haplotips no coincidents (únics d'una cadena)
-  rdf.fw$fw.unq[i] <- sum(lstI$pFW[lstI$pRV==0])
-  rdf.rv$rv.unq[i] <- sum(lstI$pRV[lstI$pFW==0])
+  rdf.fw$fw.unq[i] <- sum(lstI$pFW[!fl])
+  rdf.rv$rv.unq[i] <- sum(lstI$pRV[!fl])
 
   ## Guarda a la taula de resultats globals (que en aquest punt encara està buida):
   # El total de reads FW+RV de la mostra avaluada
   rdf.gbl$all[i]    <- rdf.fw$fw.all[i]+rdf.rv$rv.all[i]
-  # Sumatori de tots els valors mínims de freq calculats entre les parelles coincidents: intersecció entre reads
-  # Percentatge de superfície que solapa entre ambdues cadenes
-  rdf.gbl$ovrlp[i]  <- round(sum(ov)*100,2)
-  # Sumatori del nº de reads totals dels haplotips coincidents d'ambdues cadenes: reads finals
-  rdf.gbl$Fn.rd[i]  <- rdf.fw$fw.com[i]+rdf.rv$rv.com[i]
-  # Percentatge de reads dels haplotips coincidents en FW i RV: % de reads comuns respecte el total
-  # Coincideix amb el resultat de dividir els reads que han coincidit (suma de fw.com i rv.com) entre els reads
-  # que han entrat en la intersecció (suma de fw.in i rv.in)
-  rdf.gbl$common[i] <- round((rdf.gbl$Fn.rd[i])/(rdf.fw$fw.in[i]+rdf.rv$rv.in[i])*100,2)
   # Sumatori d reads dels haplotips amb baixa freqüència d'ambues cadenes
   rdf.gbl$lowf[i]   <- rdf.fw$fw.lowf[i] + rdf.rv$rv.lowf[i]
   # Sumatori dels reads únics d'una cadena de DNA (no coincidents)
   rdf.gbl$unq[i]    <- rdf.fw$fw.unq[i] + rdf.rv$rv.unq[i]
+  # Sumatori de tots els valors mínims de freq calculats entre les parelles coincidents: intersecció entre reads
+  # Percentatge de superfície que solapa entre ambdues cadenes
+  rdf.gbl$ovrlp[i]  <- round(sum(ov)*100,2)
+  # Percentatge de reads dels haplotips coincidents en FW i RV: % de reads comuns respecte el total
+  # Coincideix amb el resultat de dividir els reads que han coincidit (suma de fw.com i rv.com) entre els reads
+  # que han entrat en la intersecció (suma de fw.in i rv.in)
+  rdf.gbl$common[i] <- round((lstI$nr)/(rdf.fw$fw.in[i]+rdf.rv$rv.in[i])*100,2)
+  # Sumatori del nº de reads totals dels haplotips coincidents d'ambdues cadenes: reads finals
+  rdf.gbl$Fn.rd[i]  <- lstI$nr
 
   ### Si no es detecta superposició entre els haplotips d'ambdues cadenes, salta a la seqüent iteració
-  if(sum(lstI$pFW!=0 & lstI$pRV!=0)==0)
+  if(length(nr)==0)
   { cat("\n--------------------------------------------------\n")
     next
   }
@@ -518,18 +282,18 @@ for(i in 1:n)
   # Concatenació de l'ID del pacient i la regió avaluada en la iteració
   tt <- paste(FlTbl$Pat.ID[idx.fw[i]]," - ",FlTbl$Ampl.Nm[idx.fw[i]],sep="")
   # Suma el nº de seqs dels haplotips FW i RV independentment de si coincideixen o no
-  p <- int$pA+int$pB
+  p <- lstI$pFW+lstI$pRV
   # Substitueix el nº de reads d'aquells haplotips no coincidents per 0: Només queda el sumatori de reads
   # per cada haplotip que ha coincidit en ambdues cadenes
-  p[ int$pA==0 | int$pB==0 ] <- 0
+  p[ lstI$pFW==0 | lstI$pRV==0 ] <- 0
   # Calcula la freq relativa del nº de reads de cada haplotip entre el total dels que han coincidit
   p <- p/sum(p)
 
   ## Genera els gràfics per representar els haplotips de cada cadena i els aliniats amb les seves freq
   # Divideix el nº de seqs de cada haplotip de la cadena FW entre el total dels que entraven a la intersecció
-  pA <- int$pA/sum(int$pA)
+  pA <- lstI$pFW/sum(lstI$pFW)
   # Divideix el nº de seqs de cada haplotip de la cadena RV entre el total
-  pB <- int$pB/sum(int$pB)
+  pB <- lstI$pRV/sum(lstI$pRV)
   # Defineix el límit de l'eix Y en funció de les freqüències calculades
   ymx <- max(c(pA,pB))
   # Gràfic de barres per representar els haplotips de la cadena FW i la seva freq relativa
@@ -546,13 +310,13 @@ for(i in 1:n)
   title(sub=tt,line=0.5,cex.main=1)
 
   ### Suma de reads de cada haplotip coincident en FW i RV
-  rds <- int$pA[fl]+int$pB[fl]
+  rds <- lstI$pFW[fl]+lstI$pRV[fl]
 
   ### Aplica la funció local del principi per guardar els haplotips coincidents en ambdues cadenes
   # amb les seves freqüències en els fitxers MACHpl02
-  SaveHaplotypes(out.flnms[i],lst$seqs,rds)  #,seq0)
-} # Fi del loop sobre totes les mostres (2 per pacient)
-
+  SaveHaplotypes(out.flnms[i],as.character(hseqs),nr=(lstI$pFW[fl]+lstI$pRV[fl]))
+}, # Fi del loop sobre totes les mostres (2 per pacient)
+mc.cores = detectCores()*0.75)
 dev.off()
 
 # Genera el fitxer .txt de resultats de les interseccions
@@ -601,10 +365,10 @@ cat("\n")
 
 ## Aplica els percentatges sobre els resultats dels sumatoris anterior per FW, RV y global
 cat("\nPercentage:\n\n")
-ptts <- round(tots.fw/tots.fw[3]*100,2) ## Nota: revisar aquests resultats (% sobre la columna 3)
+ptts <- round(tots.fw/tots.fw[1]*100,2)
 print(ptts)
 cat("\n")
-ptts <- round(tots.rv/tots.rv[3]*100,2)
+ptts <- round(tots.rv/tots.rv[1]*100,2)
 print(ptts)
 cat("\n")
 ptts <- round(tots.gbl/tots.gbl[1]*100,2)
@@ -613,9 +377,6 @@ cat("\n")
 
 sink()
 
-## Guarda l'últim data frame amb els resultats globals en un arxiu .RData
-save(frdf,file=file.path(repDir,"IntersectedReads.RData"))
-
 ## Genera el pdf que es guardarà a la carpeta reports on s'inclouran els gràfics
 # de resultats globals de la intersecció d'haplotips
 pdf.flnm2 <- "IntersectBarplots.pdf"
@@ -623,7 +384,8 @@ pdf(file.path(repDir,pdf.flnm2),paper="a4r",width=10,height=6)
 par(mar=c(7,4,4,2)+.1)
 
 ## Genera la paleta de colors
-pal <- cls[1:2] # cls <- brewer.pal(8,"Dark2") definit a l'arxiu 'seqsanalfns.v4.5.R'
+cls <- brewer.pal(8,"Dark2")
+pal <- cls[1:2]
 # Guarda els noms de les mostres a partir de la concatenació de l'ID del pacient i
 # la regió avaluada (amb el condicional FW per no repetir els noms dos cops)
 bnms <- paste(Pat.ID=FlTbl$Pat.ID[fl.fw],Ampl.Nm=FlTbl$Ampl.Nm[fl.fw])
@@ -674,16 +436,9 @@ barplot(frdf$common,col="lavender",ylim=c(0,100),names.arg=mbp.nms,
         las=2,cex.names=0.6,cex.axis=0.8)
 title(main="FW + RV intersection yield",line=1)
 
-### Carregar PoolTbl i Fltbl
-# Carrega el fitxer RData generat en el pas anterior del pipeline, on s'han eliminat els primers
-# de totes les seqüències les quals es classifiquen en forward o reverse
-# Nota: això ja es fa al principi del script
-load(file=file.path(repDir,"SplittedReadsFileTable.RData"))
-
 ## Guarda els noms concatenants l'ID dels pacients i la regió amplificada separats per punt
 all.nms <- paste(FlTbl$Pat.ID,FlTbl$Ampl.Nm,sep=".")
 # Realitza el sumatori dels reads FW i RV de cadascuna de les mostres
-# Nota: es podria obtenir de la taula rdf.gbl (columna all)
 trds <- tapply(FlTbl$Reads,all.nms,sum)
 # Actualitza el vector amb els noms per eliminar els duplicats, ja que al fer el sumatori
 # pasa a tenir una única entrada per mostra (i no 2 quan tenia FW i RV)
@@ -691,7 +446,6 @@ all.nms <- names(trds)
 # Guarda la columna de reads finals per mostra (després de la intersecció)
 frds <- frdf$Fn.rd
 # Els noms de la columna de reads finals seran de nou la concatenació de ID de pacient i regió
-# Nota: el paste() seria equivalent a posar la variable all.nms
 names(frds) <- paste(frdf$Pat.ID,frdf$Ampl.Nm,sep=".")
 # Genera una matriu buida amb tantes files com noms de mostres s'han generat, i 2 columnes
 ytbl <- matrix(0,nrow=length(all.nms),ncol=2)
@@ -722,4 +476,6 @@ title(main="Global yield",line=1)
 
 dev.off()
 
+# Retorna el data frame amb els resultats globals
+return(frdf)
 }
