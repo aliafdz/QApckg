@@ -1,16 +1,22 @@
 Package: QApckg
 Type: Package
-Title: Quality assessment for Miseq data derived from HBV genome sequencing 
+Title: Quality assessment for Miseq data derived from viral sequencing 
 Version: 0.1.0
 Author: Alicia Aranda Fernandez
 Maintainer: Alicia Aranda <ali.afernandez99@gmail.com>
-Description: This package includes some functions for data processing and quality analysis
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Description: This package provides a set of functions for NGS data processing, 
+  quality analysis, filtering and demultiplexing. These functions are designed
+  to be applied in consecutive order on Miseq raw data to obtain a set of 
+  intersected haplotypes for each evaluated sample. With this consensus haplotypes 
+  different kinds of computations can be made, i.e genotyping, variant calling and
+  quasispecies diversity. 
+License: `use_proprietary_license()`
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
 biocViews:
+Imports:
+    methods
 Depends:
     ShortRead,
     RColorBrewer,
@@ -18,5 +24,12 @@ Depends:
     stringr,
     ape,
     foreach,
-    doParallel
-    
+    doParallel,
+    QSutils,
+    muscle
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
