@@ -1,13 +1,15 @@
 #' demultiplexMID
 #'
-#' Demultiplex reads by identifying MID sequences within windows of expected positions in the sequenced reads.
+#' @title Split reads by MID sequence
+#'
+#' @description Demultiplex reads by identifying MID sequences within windows of expected positions in the sequenced reads.
 #'   MIDs are 10 base-length oligonucleotides that allow the identification of samples from different patients
 #'   or origins.
 #'
-#' It is important to note that MID sequences will be not trimmed from reads, they are only identified for
+#' @description It is important to note that MID sequences will be not trimmed from reads, they are only identified for
 #'   association with each sample.
 #'
-#' @details Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
+#' @note Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
 #'   a directory for resulting FASTA files with demultiplexed reads must be named as splitDir.
 #'   Also, a reports folder must be created in the project environment, whose path will be
 #'   named as repDir.
@@ -15,9 +17,6 @@
 #' @param flashffiles Vector including the names of FLASH filtered files, with fastq extension.
 #' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
-#' @param primers Data frame with information about the \emph{primers} used in the experiment, including
-#'   \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
-#'     and \code{Aa.lpos} columns.
 #' @param mids Data frame with the association between MID identifiers and their sequences.
 #' @param maxdif Number of mismatches allowed between MID and read sequences.
 #' @param mid.start Expected start position for MID in sequence.
@@ -37,38 +36,41 @@
 #'
 #' @import ShortRead
 #' @importFrom RColorBrewer brewer.pal
+#' @importFrom parallel mclapply
 #' @seealso \code{\link{FiltbyQ30}}
 #' @export
 #' @examples
-#' maxdif <- 1
-#' mid.start <- 1
-#' mid.end <- 40
+#' repDir <- "./reports"
+#' splitDir <- "./splits"
 #' flashFiltDir <- "./flashFilt"
 #' flashffiles <- list.files(flashFiltDir)
 #' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                       colClasses="character",stringsAsFactors=F)
 #' mids <- read.table("./data/mids.csv", sep="\t", header=T,
 #'                    stringsAsFactors=F)
-#'
-#' demultiplexMID(flashffiles,samples,mids,maxdif,mid.start,mid.end)
-#'
+#' maxdif <- 1
+#' mid.start <- 1
+#' mid.end <- 40
+#' dem.res<-demultiplexMID(flashffiles,samples,mids,maxdif,mid.start,mid.end)
+#' @author Alicia Aranda
+
 
 demultiplexMID <- function(flashffiles,samples,mids,maxdif=1,mid.start=1,mid.end=40){
 
   # Si la ruta on es troben els fitxers flash no està ben especificada, intenta buscar la
   # ruta correcta a partir del directori de treball
   # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
-  if(length(flashfiles)==0) {
-    flashfiles <- list.files(paste(getwd(),"/flash",sep=''))
-    if(length(flashfiles)==0) {
-      stop("Couldn't find FLASH result files, please indicate correct path")
+  if(length(flashffiles)==0) {
+    flashffiles <- list.files(paste(getwd(),"/flashFilt",sep=''))
+    if(length(flashffiles)==0) {
+      stop("Couldn't find FLASH filtered files, please indicate correct path.\n")
     }
   }
 
   # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
   # i mostra un missatge d'error
-  if(length(samples)==0||length(primers)==0) {
-    stop("Please check data folder files, something is missing")
+  if(length(samples)==0|length(mids)==0) {
+    stop("Please check data folder files, something is missing.\n")
   }
 
   # Guarda la columna Pools (regions 5' o preS1). 'unique' per eliminar elements duplicats (només hi haurà 2)
@@ -128,7 +130,7 @@ for(i in 1:length(pools)) {
   seqs <- seqs[ width(seqs) > 150 ]
 
   ###  Loop sobre els MIDs del pool avaluat
-  for(j in mid.sets[[i]]){
+  mclapply(mid.sets[[i]],function(j){
     # Guarda en una variable la seq inclosa en les posicions indicades.
     # En aquest cas, es busca el MID entre les posicions 1-40 (start-end), definides
     # a l'arxiu de paràmetres.
@@ -155,7 +157,7 @@ for(i in 1:length(pools)) {
                       append=app.flag)
       # Actualitza les seqs dels reads que no han fet match en aquesta iteració
       seqs <- seqs[!flags]}
-  }
+  },mc.cores= detectCores()*0.75)
 
   by.pools$TotReads[i] <- reads # Sumatori dels reads obtinguts en el pool avaluat
 

@@ -1,14 +1,16 @@
 #' SaveHaplotypes
 #'
-#' Sorts and renames haplotypes by the number of mutations with respect to the
-#'   dominant haplotype, and by abundance, and saves their sequences in a fasta file.
+#' @title Save consensus haplotypes after sorting by mutation and abundance
 #'
-#' @note This function is similar to \code{\link{SortByMutations}} function from \code{QSutils}
+#' @description Sorts and renames haplotypes by the number of mutations with respect to the
+#'   dominant haplotype, and by abundance, and saves their sequences in a FASTA file.
+#'
+#' @details This function is similar to \code{\link{SortByMutations}} function from \code{QSutils}
 #'   package but has new features. For example, in this case haplotypes with a huge number
 #'   of mutations with respect to the dominant one are discarted, and columns with all gaps
-#'   are eliminated. Also, the final sequences are saved in a fasta file.
+#'   are eliminated. Also, the final sequences are saved in a FASTA file.
 #'
-#' @param flnm File name of the fasta file that will be generated with haplotype sequences.
+#' @param flnm File name of the FASTA file that will be generated with haplotype sequences.
 #' @param bseqs Character object with the haplotype alignment.
 #' @param nr Vector with the haplotype counts.
 #' @param max.difs Maximum number of mismatches allowed with respect to the dominant haplotype.
@@ -18,24 +20,25 @@
 #'   \item{nr}{Vector of the haplotype counts.}
 #'   \item{nm}{Vector of the number of differences of each haplotype with respect to the dominant haplotype.}
 #'
-#'   After execution, a fasta file named as \code{flnm} with the \code{bseqs} element will be generated.
+#'   After execution, a FASTA file named as \code{flnm} with the \code{bseqs} element will be generated.
 #'
-#'
-#' @seealso \code{\link{SortByMutations}}
+#' @import Biostrings
+#' @seealso \code{\link{SortByMutations}},\code{\link{ConsHaplotypes}},\code{\link{IntersectStrandHpls}}
 #' @export
+#' @author Alicia Aranda
 
 
 ### Dóna nom als haplotips en funció del nombre de mutacions respecte la màster
-### i de la seva frequencia poblacional, i salva les seqüències en un fitxer fasta.
+### i de la seva frequencia poblacional, i salva les seqüències en un fitxer FASTA.
 # Els arguments corresponen al nom del fitxer on es desaran els resultats, les seqs
 # dels haplotips coincidents en ambdues cadenes, el sumatori de reads per haplotip coincident
 # i el nº màxim de diferències permeses
 SaveHaplotypes <- function(flnm="./SavedHaplotypes.fna",bseqs,nr,max.difs=250)
 {
   if(!is(bseqs, "character"))
-    stop("The input object must be character\n")
+    stop("The input object must be character.\n")
   if(length(bseqs) != length(nr))
-    stop("The input objects must have the same length \n")
+    stop("The input objects must have the same length.\n")
 
   ## Si només hi ha un haplotip coincident:
   if(length(bseqs)==1)
@@ -48,7 +51,7 @@ SaveHaplotypes <- function(flnm="./SavedHaplotypes.fna",bseqs,nr,max.difs=250)
     # Assigna a la seq el nom corresponent: haplotip nº1 amb 0 mutacions, indicant el nº de reads,
     # i la freq serà del 100% (perquè només queda 1 haplotip)
     names(bseqs) <- paste("Hpl.0.0001",nr,100,sep="|")
-    # Guarda la seq en un fitxer fasta en la ruta indicada en l'argument de la funció
+    # Guarda la seq en un fitxer FASTA en la ruta indicada en l'argument de la funció
     writeXStringSet(DNAStringSet(bseqs),flnm)
     # Retorna una llista amb la seqüència i el nº de reads de l'haplotip
     return( list(bseqs=bseqs,nr=nr,nm=0) )
@@ -69,7 +72,7 @@ SaveHaplotypes <- function(flnm="./SavedHaplotypes.fna",bseqs,nr,max.difs=250)
   nm <- nm[nm<=max.difs]
 
   # Si després d'eliminar els haplotips amb múltiples diferències només en queda un, realitza el procés
-  # del principi per guardar aquella seqüència en el fitxer fasta
+  # del principi per guardar aquella seqüència en el fitxer FASTA
   if(length(bseqs)==1)
   { bnts <- strsplit(bseqs[1],split="")[[1]]
   bnts <- bnts[bnts!="-"]
@@ -120,7 +123,7 @@ SaveHaplotypes <- function(flnm="./SavedHaplotypes.fna",bseqs,nr,max.difs=250)
   # nm= mutacions respecte seq màster
   nms <- paste("Hpl", nm, sprintf("%04d",isq), sep=".")
 
-  ## Genera la capçalera fasta amb el nom de l'haplotip, nombre de reads i freq relativa
+  ## Genera la capçalera FASTA amb el nom de l'haplotip, nombre de reads i freq relativa
   names(bseqs) <- paste(nms,nr,frq,sep="|")
 
 
@@ -138,8 +141,9 @@ SaveHaplotypes <- function(flnm="./SavedHaplotypes.fna",bseqs,nr,max.difs=250)
     bseqs <- apply(nuc.mat,1,paste,collapse="")
   }
 
-  ## Genera el fitxer fasta amb els haplotips que han coincidit i sense gaps
+  ## Genera el fitxer FASTA amb els haplotips que han coincidit i sense gaps
   writeXStringSet(DNAStringSet(bseqs),flnm)
   # Retorna una llista amb les seqs dels haplotips coincidents, el nº de reads i el nº de mutacions
-  return(list(bseqs=bseqs,nr=nr,nm=nm))
+  result <- list(bseqs=bseqs,nr=nr,nm=nm)
+return(result)
 }

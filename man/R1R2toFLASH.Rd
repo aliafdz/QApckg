@@ -2,41 +2,59 @@
 % Please edit documentation in R/R1R2toFLASH.R
 \name{R1R2toFLASH}
 \alias{R1R2toFLASH}
-\title{R1R2toFLASH}
+\title{Run FLASH to extend paired-end reads and generate report graphs.}
 \usage{
 R1R2toFLASH(runfiles, flash, min.ov = 20, max.ov = 300, err.lv = 0.1)
 }
 \arguments{
-\item{runfiles}{Character indicating which files are going to be processed, often with fastq.gz extension}
+\item{runfiles}{Character indicating which files are going to be processed, often with fastq.gz extension.}
 
-\item{flash}{Folder path containing FLASH executable}
+\item{flash}{Folder path containing FLASH executable.}
 
-\item{min.ov}{Minimum overlap (in nt) between R1 and R2}
+\item{min.ov}{Minimum overlap (in nt) between R1 and R2.}
 
-\item{max.ov}{Maximum overlap (in nt) between R1 and R2}
+\item{max.ov}{Maximum overlap (in nt) between R1 and R2.}
 
-\item{err.lv}{Mismatch fraction accepted in overlapping}
+\item{err.lv}{Mismatch fraction accepted in overlapping.}
 }
 \value{
 The function returns a \code{\link{data.frame}} object containing FLASH results
-  for your sequenced regions, but also two report files:
+  for sequenced regions.
+
+After the execution, a fastq file with extended reads for each pool will be saved in
+  the flash folder. Additionaly, two report files will be generated:
   \enumerate{
   \item \code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
     and the yield of the process for each pool.
-  \item \code{FLASH_report.txt}: Includes the data returned by the function with FLASH parameters used.
+  \item \code{FLASH_report.txt}: Includes the data returned by the function with used FLASH parameters.
 }
 }
 \description{
-A function that runs FLASH program to extend paired-end reads and generates some report graphics.
+This function applies \code{\link{executeFLASH}} over R1 and R2 reads
+  for multiple sample pools and returns
 }
 \details{
+R1R2toFLASH
+}
+\note{
 Files indicated in \code{runfiles} must be located in a folder named runDir.
-  Also, a reports folder must be created in the project environment, whose path will be
-  named as repDir.
+  Also, flash and reports folders must be created in the project environment, whose paths will be
+  named as flashDir and repDir respectively.
 }
 \examples{
 runDir <- "./run"
-flash <- "C:/FLASH/flash.exe"
+repDir <- "./reports"
+flashDir <- "./flash"
+flash <- "./FLASH/flash.exe"
 runfiles <- list.files(runDir)
-R1R2toFLASH(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
+min.ov <- 20
+max.ov <- 300
+err.lv <- 0.1
+flashres <- R1R2toFLASH(runfiles,flash,min.ov,max.ov,err.lv)
+}
+\seealso{
+\code{\link{executeFLASH}}
+}
+\author{
+Alicia Aranda
 }

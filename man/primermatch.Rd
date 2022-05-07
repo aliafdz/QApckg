@@ -2,7 +2,7 @@
 % Please edit documentation in R/primermatch.R
 \name{primermatch}
 \alias{primermatch}
-\title{primermatch}
+\title{Identfication of primer specific sequences}
 \usage{
 primermatch(j, idx, flnms, pool)
 }
@@ -13,19 +13,24 @@ primermatch(j, idx, flnms, pool)
 
 \item{flnms}{Vector including the names of demultiplexed files by MID, with fna extension, corresponding to the evaluated samples.}
 
-\item{pool}{Character with the name of sample pool.}
+\item{pool}{Character indicating the name of sample pool.}
 }
 \value{
 This function requires the result tables named \code{FlTbl, PoolTbl} and \code{pr.res} that will be filled with the data collected
-  from the evaluated sample. This results will be further evaluated in \code{\link{demultiplexprimer}} parent function.
+  from the evaluated sample. This results will be further evaluated in \code{\link{demultiplexPrimer}} parent function.
 }
 \description{
 Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
 }
 \details{
-This function is only defined for correct execution of \code{\link{demultiplexprimer}} function from the same package, so it
+primermatch
+
+This function is only defined for correct execution of \code{\link{demultiplexPrimer}} function from the same package, so it
   cannot be executed individually.
 }
 \seealso{
-\code{\link{demultiplexprimer}}
+\code{\link{demultiplexPrimer}}
+}
+\author{
+Alicia Aranda
 }

@@ -1,21 +1,24 @@
 #' primermatch
 #'
-#' Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
+#' @title Identfication of primer specific sequences
 #'
-#' This function is only defined for correct execution of \code{\link{demultiplexprimer}} function from the same package, so it
+#' @description Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
+#'
+#' @details This function is only defined for correct execution of \code{\link{demultiplexPrimer}} function from the same package, so it
 #'   cannot be executed individually.
 #'
 #' @param j Integer corresponding to the sample (element in \code{idx}) to be evaluated.
 #' @param idx Vector with index of samples to be evaluated (for one pool).
 #' @param flnms Vector including the names of demultiplexed files by MID, with fna extension, corresponding to the evaluated samples.
-#' @param pool Character with the name of sample pool.
+#' @param pool Character indicating the name of sample pool.
 #' @return This function requires the result tables named \code{FlTbl, PoolTbl} and \code{pr.res} that will be filled with the data collected
-#'   from the evaluated sample. This results will be further evaluated in \code{\link{demultiplexprimer}} parent function.
+#'   from the evaluated sample. This results will be further evaluated in \code{\link{demultiplexPrimer}} parent function.
 #' @import QSutils
 #' @import ShortRead
 #' @import Biostrings
-#' @seealso \code{\link{demultiplexprimer}}
+#' @seealso \code{\link{demultiplexPrimer}}
 #' @export
+#' @author Alicia Aranda
 
 primermatch <- function(j,idx,flnms,pool){
 
@@ -140,10 +143,10 @@ primermatch <- function(j,idx,flnms,pool){
     # Calcula la freqüència relativa de cada amplicó pertanyent al MID avaluat
     frq_lst <- round(nr/sum(nr)*100,2)
     # Donat que la funció del paquet QSutils retorna els noms dels haplotips diferent al desitjat, es canvien els
-    # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer fasta amb nom de l'haplotip,
+    # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer FASTA amb nom de l'haplotip,
     # nombre de reads i freq relativa
     names(lst$bseqs) <- paste(str_replace_all(names(lst$bseqs),'_','.'),nr,frq_lst,sep="|")
-    # Generació del fitxer fasta amb tots els haplotips assignats a la carpeta trim
+    # Generació del fitxer FASTA amb tots els haplotips assignats a la carpeta trim
     writeXStringSet(lst$bseqs,file.path(trimDir,up.flnm))
 
     cat("\nForward seqs, table of read lengths (over 10 rd)\n")
@@ -283,10 +286,10 @@ primermatch <- function(j,idx,flnms,pool){
     # Calcula la freqüència relativa de cada amplicó pertanyent al MID avaluat
     frq_lst <- round(nr/sum(nr)*100,2)
     # Donat que la funció del paquet QSutils retorna els noms dels haplotips diferent al desitjat, es canvien els
-    # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer fasta amb nom de l'haplotip,
+    # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer FASTA amb nom de l'haplotip,
     # nombre de reads i freq relativa
     names(lst$bseqs) <- paste(str_replace_all(names(lst$bseqs),'_','.'),nr,frq_lst,sep="|")
-    # Generació del fitxer fasta amb tots els haplotips assignats a la carpeta trim
+    # Generació del fitxer FASTA amb tots els haplotips assignats a la carpeta trim
     writeXStringSet(lst$bseqs,file.path(trimDir,dn.flnm))
 
     cat("\nReverse seqs, table of read lengths (over 10 rd)\n")

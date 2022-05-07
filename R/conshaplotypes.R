@@ -1,29 +1,24 @@
 #' ConsHaplotypes
 #'
+#' @title Generate consensus haplotypes
 #'
-#' Archivos almacenados en la carpeta global del proyecto: “muscle.log”. Es el archivo donde se guardan los
-#' parámetros de la ejecución de muscle.
-#' Archivos almacenados en la carpeta reports: "IntersectBarplots.pdf", "IntersectedReads.RData",
-#' "MA.Intersects.plots.pdf", "MA.Intersects-SummRprt.txt".
-#' Archivos almacenados en la carpeta tmp: “muscleInFile.fna”, “muscleOutFile.fna”. Se generan al ejecutar el
-#' programa muscle, son los archivos de entrada y salida del programa.
-#' Archivos almacenados en la carpeta MACH: 4 archivos .fna por paciente (2 por pool) →
-#' los que empiezan por MAfwrv corresponden a los resultados del alineamiento múltiple (muscle) de los haplotipos
-#' de cada muestra (forward y reverse) después de realizar el filtro por abundancia de 0.2%; los que empiezan por
-#' MACHpl02 se generan después de hacer la intersección entre cadenas FW y RV, incluyen las secuencias fasta de los
-#' haplotipos que han coincidido entre las cadenas.
-
+#' @description Computes the intersection of forward and reverse strand haplotypes and generates some report files.
 #'
-#' Computes the intersection of forward and reverse strand haplotypes and generates some report files.
-#'
-#' This function is designed to be used after the execution of \code{\link{demultiplexprimer}} function
-#'   from the same package. After the generation of fasta files containing forward and reverse strand reads
+#' @details This function is designed to be used after the execution of \code{\link{demultiplexPrimer}} function
+#'   from the same package. After the generation of FASTA files containing forward and reverse strand reads
 #'   for the evaluated samples, \code{\link{ConsHaplotypes}} executes multiple alignment with \code{\link{muscle}} and
-#'   returns the consensus haplotypes with \code{\link{IntersectStrandHpls}}.
+#'   returns the consensus haplotypes using \code{\link{IntersectStrandHpls}}, that will be saved using
+#'   the helper function \code{\link{SaveHaplotypes}}.
 #'
-#' @param pm.res The list returned by \code{\link{demultiplexprimer}}, including \code{fileTable}
+#' @note Files indicated in \code{trimfiles} must be located in a directory named trimDir, and
+#'   a directory for resulting FASTA files with intersected reads and the results of multiple alignment
+#'   must be named as mach.Dir. Also, a reports folder must be created in the project environment, whose path will be
+#'   named as repDir.
+#'
+#' @param trimfiles Vector including the names of demultiplexed files by specific primer, with fna extension.
+#' @param pm.res The list returned by \code{\link{demultiplexPrimer}}, including \code{fileTable}
 #'   and \code{poolTable} data frames.
-#' @param thr Threshold to filter haplotypes at minimum abundance before intersection.
+#' @param thr Threshold to filter haplotypes at minimum abundance before multiple alignment.
 #' @param min.seq.len Threshold to filter haplotypes at minimum length before intersection.
 #'
 #' @return The function returns a \code{\link{data.frame}} object containing the intersection results
@@ -31,7 +26,7 @@
 #'   (for being below a given frequency threshold or unique to a single strand), overlapping frequency
 #'   between both strands and the common reads (in percentage and nº of reads).
 #'
-#'   After execution, two fasta files for each combination of sample and pool will be saved in the MACH folder;
+#'   After execution, two FASTA files for each combination of sample and pool will be saved in the MACH folder;
 #'   the first includes multiple alignment between forward and reverse strand haplotypes, and the second
 #'   includes the forward and reverse strands intersected. Additionaly, some report files will be generated:
 #'   \enumerate{
@@ -51,23 +46,43 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom methods as
 #' @importFrom methods is
-#' @importFrom stats quantile
-#' @seealso \code{\link{muscle}}
+#' @seealso \code{\link{muscle}},\code{\link{IntersectStrandHpls}},\code{\link{demultiplexPrimer}},\code{\link{SaveHaplotypes}}
 #' @examples
+#' splitDir <- "./splits"
+#' splitfiles <- list.files(splitDir)
+#' samples <- read.table("./data/samples.csv", sep="\t", header=T,
+#'                       colClasses="character",stringsAsFactors=F)
+#' mids <- read.table("./data/mids.csv", sep="\t", header=T,
+#'                    stringsAsFactors=F)
 #' # Apply previous function from QA analysis
-#' pm.res <- demultiplexprimer(splitfiles,samples,primers)
+#' pm.res <- demultiplexPrimer(splitfiles,samples,primers)
 #' # Define necessary parameters
 #' min.seq.len <- 150
 #' min.rd <-   1
 #' thr <- 0.2
-#' ConsHaplotypes(pm.res, thr, min.seq.len)
+#' int.res <- ConsHaplotypes(pm.res, thr, min.seq.len)
 #'
 #' @export
+#' @author Alicia Aranda
 
-ConsHaplotypes <- function(pm.res,thr, min.seq.len){
-## No cal introduir els arxius fasta de la carpeta trim perquè es treuen de la taula fileTable de la funció anterior.
-# En lloc de carregar el RData es carreguen les taules fileTable i poolTable de la variable de la funció anterior.
+ConsHaplotypes <- function(trimfiles,pm.res,thr=0.2, min.seq.len=150){
+  # Si la ruta on es troben els fitxers de la carpeta trim no està ben especificada, intenta buscar la
+  # ruta correcta a partir del directori de treball
+  # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
+  if(length(trimfiles)==0) {
+    trimfiles <- list.files(paste(getwd(),"/trim",sep=''))
+    if(length(trimfiles)==0) {
+      stop("Please indicate correct path for demultiplexed reads by primer.\n")
+    }
+  }
 
+  # Si la taula pm.res no s'ha inclòs o no existeix, retorna un missatge d'error
+  if(!exists(pm.res)==0|length(pm.res==0)|!is.list(pm.res)) {
+    stop("pm.res table not found.\n Check if you have executed the previous functions needed.\n")
+    }
+
+
+  # En lloc de carregar el RData es carreguen les taules fileTable i poolTable de la variable de la funció anterior.
   FlTbl<- pm.res$fileTable
   PoolTbl<- pm.res$poolTable
 
@@ -79,11 +94,11 @@ o <- order(FlTbl$Pat.ID,FlTbl$Ampl.Nm,FlTbl$Str)
 # les entrades corresponents al mateix pacient i en segon ordre a la mateixa regió avaluada
 FlTbl <- FlTbl[o,]
 
-### Guarda els noms dels fitxers fasta inclosos al directori trim i els separa en funció
+### Guarda els noms dels fitxers FASTA inclosos al directori trim i els separa en funció
 # de la cadena asignada als reads
-in.files <- file.path(trimDir,FlTbl$File.Name)
-idx.fw <- which(FlTbl$Str=="fw")
-idx.rv <- which(FlTbl$Str=="rv")
+in.files<-file.path(trimDir,trimfiles)
+idx.fw<-grep("PrFW",in.files)
+idx.rv<-grep("PrRV",in.files)
 
 # Guarda els noms dels fitxers resultants d'aquest script, que correspondran a la concatenació
 # del terme MACHpl02, l'ID del pacient i el nom de la regió avaluada, indicats de manera que només
@@ -130,7 +145,7 @@ mclapply(n, function(i){
   if(!file.exists(in.files[idx.rv[i]])) i=i+1
 
   # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
-  # seves freqüències a partir d'un fitxer fasta indicat.
+  # seves freqüències a partir d'un fitxer FASTA indicat.
   lstf <- ReadAmplSeqs(in.files[idx.fw[i]])
   # Guarda les seqüències de longitud major al mínim permès i filtra el nº de reads
   # eliminant els de les seqüències que presenten longitud menor al mínim permès
@@ -150,7 +165,7 @@ mclapply(n, function(i){
   # de reads del fitxer inicial.
   frq_lst <- round(nrf/sum(lstf$nr)*100,2)
   # Donat que la funció del paquet QSutils retorna els noms dels haplotips diferent al desitjat, es canvien els
-  # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer fasta amb nom de l'haplotip,
+  # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer FASTA amb nom de l'haplotip,
   # nombre de reads i freq relativa. També es substitueix el terme Hpl per HplFw amb la funció 'gsub()'.
   names(seqsf) <- paste(gsub("Hpl","HplFw",gsub('_','.',names(seqsf))),nrf,frq_lst,sep="|")
 
@@ -163,7 +178,7 @@ mclapply(n, function(i){
   ## Aplica el mateix procés per a les cadenes classificades reverse de la mostra avaluada
 
   # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
-  # seves freqüències a partir d'un fitxer fasta indicat.
+  # seves freqüències a partir d'un fitxer FASTA indicat.
   lstr <- ReadAmplSeqs(in.files[idx.rv[i]])
   # Guarda les seqüències de longitud major al mínim permès i filtra el nº de reads
   # eliminant els de les seqüències que presenten longitud menor al mínim permès
@@ -183,7 +198,7 @@ mclapply(n, function(i){
   # de reads del fitxer inicial.
   frq_lst <- round(nrr/sum(lstr$nr)*100,2)
   # Donat que la funció del paquet QSutils retorna els noms dels haplotips diferent al desitjat, es canvien els
-  # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer fasta amb nom de l'haplotip,
+  # noms substituint els caràcters '_' per '.', i generant la capçalera del fitxer FASTA amb nom de l'haplotip,
   # nombre de reads i freq relativa. També es substitueix el terme Hpl per HplFw amb la funció 'gsub()'
   names(seqsr) <- paste(gsub("Hpl","HplRv",gsub('_','.',names(seqsr))),nrr,frq_lst,sep="|")
 

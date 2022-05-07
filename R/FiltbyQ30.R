@@ -1,7 +1,10 @@
 #' FiltbyQ30
 #'
-#' This function applies \code{\link{FastqStreamer}} over a fastq file and removes
-#'   all reads that have a defined fraction of bases below Q30.
+#' @title Filter haplotypes by Q30
+#'
+#' @description This function applies \code{\link{FastqStreamer}} over a fastq file and removes
+#'   all reads that have a defined fraction of bases below Q30. The remaining reads will be saved
+#'   in a new fastq file.
 #'
 #' @param max.pct The maximum percentage of bases below Q30 allowed in reads (by default,5\%).
 #' @param flashfiles Vector including the names of files that are going to be processed,
@@ -9,21 +12,22 @@
 #' @param flashres Table of results obtained after the execution of \code{\link{R1R2toFLASH}}
 #'   function.
 #'
-#' @note This function is designed to be applied after \code{\link{R1R2toFLASH}} function from
+#' @details This function is designed to be applied after \code{\link{R1R2toFLASH}} function from
 #'   the same package. If \code{flashres} is not specified but FLASH extension was previously
 #'   done, the function will try to load the FLASH results table from the reports folder.
 #'
-#' @details Files indicated in \code{flashfiles} must be located in a folder named flashDir.
-#'   Also, a reports folder must be created in the project environment, whose path will be
-#'   named as repDir.
+#' @note Files indicated in \code{flashfiles} must be located in a folder named flashDir.
+#'   Also, flashFilt and reports folders must be created in the project environment, whose paths will be
+#'   named as flashFiltDir and repDir respectively.
 #'
-#' @return A \code{\link{data.frame}} object containing FLASH and Filtering results,
-#'   but also two report files:
+#' @return A \code{\link{data.frame}} object containing FLASH and Filtering results.
+#' @return After the execution, a fastq file with remaining reads for each pool will be saved in
+#'   the flashFilt folder. Additionaly, two report files will be generated:
 #'   \enumerate{
 #'   \item \code{FiltQ30.barplot.pdf}: Includes a first Bar plot representing raw reads,
 #'     extended reads by FLASH and filtered reads, and a second Bar plot with
 #'     the yield by process for each pool.
-#'   \item \code{FiltQ30_report.txt}: The same data returned by the function.
+#'   \item \code{FiltQ30_report.txt}: Includes the same data returned by the function.
 #' }
 #'   The results table obtained includes two new columns with respect to FLASH results
 #'     table, named FiltQ30 (number of filtered reads) and Raw (total sequencing reads).
@@ -37,10 +41,12 @@
 #' runfiles <- list.files(runDir)
 #' flash <- "C:/FLASH/flash.exe"
 #' flashDir <- "./flash"
+#' repDir <- "./reports"
 #' flashfiles <- list.files(flashDir)
 #' flashres <- R1R2toFLASH(runfiles,flash)
 #' filtres <- FiltbyQ30(max.pct=0.05,flashfiles,flashres)
-#'
+#' @author Alicia Aranda
+
 FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
   # La taula resulta d'aplicar la funció R1R2toFLASH
   # Si no existeix la variable o no s'ha incorporat, llegeix la taula del fitxer
@@ -52,7 +58,7 @@ FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
       # Si no pot trobar la taula resultant de FLASH, atura l'execució i genera un
       # missatge d'error
       error = function(e){
-        message("Error: Check if you have executed the previous functions needed.")
+        message("Error: Check if you have executed the previous functions needed.\n")
         stop(print(e))
       })
   }
@@ -62,13 +68,8 @@ FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
   if(length(flashfiles)==0) {
     flashfiles <- list.files(paste(getwd(),"/flash",sep=''))
     if(length(flashfiles)==0) {
-      stop("Couldn't find FLASH result files, please indicate correct path")
+      stop("Couldn't find FLASH result files, please indicate correct path.\n")
     }}
-
-  #### Si definim flashdata com a variable global en la funció de QCbyRead podem
-  # accedir en aquesta funció posant la variable com argument.
-  # La variable resulta d'aplicar QCscores per read sobre les dades de flash, cal mirar
-  # si es poden aprofitar les dades
 
 ### Fitxers que resulten de Flash
 # Guarda del fitxer només el nom del pool seguit de S1 o S2
@@ -146,7 +147,7 @@ print(flashres)
 sink()
 
 ### PROVA per veure si es podrien juntar els fitxers de FLASH i de filtrat
-### Sí que funciona!!
+# Per mantenir els resultats del pipeline original, de moment aquest codi no s'executa.
 #file.rename(file.path(repDir,"FLASH_report.txt"),file.path(repDir,"FLASH+FiltQ30_report.txt"))
 #sink(file.path(repDir,"FLASH+FiltQ30_report.txt"),append=TRUE)
 #cat("\nFiltering haplotypes by Q30:")

@@ -1,16 +1,18 @@
-#' demultiplexprimer
+#' demultiplexPrimer
 #'
-#' Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.
+#' @title Trim specific primer sequences
+#'
+#' @description Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.
 #' It is important to note that MID and primer sequences will be trimmed from reads after the identification of primers,
 #'   but amplicon length is not predetermined.
 #'
-#' After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, primer sequences are identified
+#' @details After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, primer sequences are identified
 #'   in both strands. First, forward strands are recognized by searching FW primer sequence in 5' end and the
 #'   reverse complement of RV primer sequence in 3' end. Then, reverse strands are recognized by searching RV
 #'   primer sequence in 5' end and FW primer sequence in 3' end, obtaining the reverse complement of all reads
 #'   identified as reverse strands. So, both strands are obtained in a way that facilitates their intersection.
 #'
-#' @details Files indicated in \code{splitfiles} must be located in a directory named splitDir, and
+#' @note Files indicated in \code{splitfiles} must be located in a directory named splitDir, and
 #'   a directory for resulting FASTA files with trimmed reads must be named as trimDir.
 #'   Also, a reports folder must be created in the project environment, whose path will be
 #'   named as repDir.
@@ -48,6 +50,7 @@
 #' @import QSutils
 #' @importFrom RColorBrewer brewer.pal
 #' @export
+#' @seealso \code{\link{demultiplexMID}},\code{\link{primermatch}}
 #' @examples
 #' prmm <- 3
 #' min.len <- 180
@@ -61,10 +64,11 @@
 #'                       colClasses="character",stringsAsFactors=F)
 #' mids <- read.table("./data/mids.csv", sep="\t", header=T,
 #'                    stringsAsFactors=F)
-#' demultiplexprimer(splitfiles,samples,primers,prmm,min.len,target.st,target.end)
-#'
+#' pm.res <- demultiplexPrimer(splitfiles,samples,primers,prmm,min.len,target.st,target.end)
+#' @author Alicia Aranda
 
-demultiplexprimer <- function(splitfiles,samples,primers,prmm=3,min.len=180,target.st=1,target.end=100){
+
+demultiplexPrimer <- function(splitfiles,samples,primers,prmm=3,min.len=180,target.st=1,target.end=100){
 
   # Si la ruta on es troben els fitxers de la carpeta splits no està ben especificada, intenta buscar la
   # ruta correcta a partir del directori de treball
@@ -72,14 +76,14 @@ demultiplexprimer <- function(splitfiles,samples,primers,prmm=3,min.len=180,targ
   if(length(splitfiles)==0) {
     splitfiles <- list.files(paste(getwd(),"/splits",sep=''))
     if(length(splitfiles)==0) {
-      stop("Please indicate correct path for demultiplexed reads by MID.")
+      stop("Please indicate correct path for demultiplexed reads by MID.\n")
     }
   }
 
   # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
   # i mostra un missatge d'error
   if(length(samples)==0||length(primers)==0) {
-    stop("Please check data folder files, something is missing.")
+    stop("Please check data folder files, something is missing.\n")
   }
 
 ### Els primers específics emprats en l'amplificació (que afegeixen la cua M13 per seqüenciar) s'han d'eliminar

@@ -2,12 +2,12 @@
 % Please edit documentation in R/SaveHaplotypes.R
 \name{SaveHaplotypes}
 \alias{SaveHaplotypes}
-\title{SaveHaplotypes}
+\title{Save consensus haplotypes after sorting by mutation and abundance}
 \usage{
 SaveHaplotypes(flnm = "./SavedHaplotypes.fna", bseqs, nr, max.difs = 250)
 }
 \arguments{
-\item{flnm}{File name of the fasta file that will be generated with haplotype sequences.}
+\item{flnm}{File name of the FASTA file that will be generated with haplotype sequences.}
 
 \item{bseqs}{Character object with the haplotype alignment.}
 
@@ -21,18 +21,23 @@ A list containing the following:
   \item{nr}{Vector of the haplotype counts.}
   \item{nm}{Vector of the number of differences of each haplotype with respect to the dominant haplotype.}
 
-  After execution, a fasta file named as \code{flnm} with the \code{bseqs} element will be generated.
+  After execution, a FASTA file named as \code{flnm} with the \code{bseqs} element will be generated.
 }
 \description{
 Sorts and renames haplotypes by the number of mutations with respect to the
-  dominant haplotype, and by abundance, and saves their sequences in a fasta file.
+  dominant haplotype, and by abundance, and saves their sequences in a FASTA file.
 }
-\note{
+\details{
+SaveHaplotypes
+
 This function is similar to \code{\link{SortByMutations}} function from \code{QSutils}
   package but has new features. For example, in this case haplotypes with a huge number
   of mutations with respect to the dominant one are discarted, and columns with all gaps
-  are eliminated. Also, the final sequences are saved in a fasta file.
+  are eliminated. Also, the final sequences are saved in a FASTA file.
 }
 \seealso{
-\code{\link{SortByMutations}}
+\code{\link{SortByMutations}},\code{\link{ConsHaplotypes}},\code{\link{IntersectStrandHpls}}
+}
+\author{
+Alicia Aranda
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/demultiplexMID.R
 \name{demultiplexMID}
 \alias{demultiplexMID}
-\title{demultiplexMID}
+\title{Split reads by MID sequence}
 \usage{
 demultiplexMID(
   flashffiles,
@@ -26,10 +26,6 @@ demultiplexMID(
 \item{mid.start}{Expected start position for MID in sequence.}
 
 \item{mid.end}{Expected end position for MID in sequence.}
-
-\item{primers}{Data frame with information about the \emph{primers} used in the experiment, including
-\code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
-  and \code{Aa.lpos} columns.}
 }
 \value{
 A list containing the following:
@@ -47,30 +43,36 @@ A list containing the following:
 Demultiplex reads by identifying MID sequences within windows of expected positions in the sequenced reads.
   MIDs are 10 base-length oligonucleotides that allow the identification of samples from different patients
   or origins.
-}
-\details{
+
 It is important to note that MID sequences will be not trimmed from reads, they are only identified for
   association with each sample.
-
+}
+\details{
+demultiplexMID
+}
+\note{
 Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
   a directory for resulting FASTA files with demultiplexed reads must be named as splitDir.
   Also, a reports folder must be created in the project environment, whose path will be
   named as repDir.
 }
 \examples{
-maxdif <- 1
-mid.start <- 1
-mid.end <- 40
+repDir <- "./reports"
+splitDir <- "./splits"
 flashFiltDir <- "./flashFilt"
 flashffiles <- list.files(flashFiltDir)
 samples <- read.table("./data/samples.csv", sep="\t", header=T,
                       colClasses="character",stringsAsFactors=F)
 mids <- read.table("./data/mids.csv", sep="\t", header=T,
                    stringsAsFactors=F)
-
-demultiplexMID(flashffiles,samples,mids,maxdif,mid.start,mid.end)
-
+maxdif <- 1
+mid.start <- 1
+mid.end <- 40
+dem.res<-demultiplexMID(flashffiles,samples,mids,maxdif,mid.start,mid.end)
 }
 \seealso{
 \code{\link{FiltbyQ30}}
+}
+\author{
+Alicia Aranda
 }

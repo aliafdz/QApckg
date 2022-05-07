@@ -2,18 +2,19 @@
 % Please edit documentation in R/QCscores.R
 \name{QCscores}
 \alias{QCscores}
-\title{QCscores}
+\title{Compute Phred scores by position or by read}
 \usage{
 QCscores(flnm, ln = 301, byPos = FALSE, byRead = FALSE)
 }
 \arguments{
 \item{flnm}{Fastq file to be evaluated.}
 
-\item{ln}{Amplicon length (by default 301 nt).}
+\item{ln}{Amplicon length.}
 
-\item{byPos}{Logical indicating if QC by position should be done.}
+\item{byPos}{Logical indicating if QC by position should be computed.}
 
-\item{byRead}{Logical indicating if QC by read should be done.}
+\item{byRead}{Logical indicating if QC by read should be computed.
+Note that Arguments \code{byPos} and \code{byRead} are mutually exclusive.}
 }
 \value{
 If argument \code{byPos=TRUE}, the function returns a list including
@@ -37,12 +38,15 @@ Applies \code{\link{FastqStreamer}} over a fastq file and returns quality
   control mesures (Phred scores), either by position or by read.
 }
 \details{
+QCscores
+}
+\note{
 This function is only defined for correct execution of \code{\link{PoolQCbyPos}} and \code{\link{PoolQCbyRead}}
  functions from the same package.
 }
-\note{
-Arguments \code{byPos} and \code{byRead} are mutually exclusive.
-}
 \seealso{
 \code{\link{PoolQCbyPos}}, \code{\link{PoolQCbyRead}}, \code{\link{QCplot}}
+}
+\author{
+Alicia Aranda
 }

@@ -1,32 +1,47 @@
 #' R1R2toFLASH
 #'
-#' A function that runs FLASH program to extend paired-end reads and generates some report graphics.
+#' @title Run FLASH to extend paired-end reads and generate report graphs.
+#' @author Alicia Aranda
+#' @description This function applies \code{\link{executeFLASH}} over R1 and R2 reads
+#'   for multiple sample pools and returns
 #'
-#' @details Files indicated in \code{runfiles} must be located in a folder named runDir.
-#'   Also, a reports folder must be created in the project environment, whose path will be
-#'   named as repDir.
-#' @param runfiles Character indicating which files are going to be processed, often with fastq.gz extension
-#' @param flash Folder path containing FLASH executable
-#' @param min.ov Minimum overlap (in nt) between R1 and R2
-#' @param max.ov Maximum overlap (in nt) between R1 and R2
-#' @param err.lv Mismatch fraction accepted in overlapping
+#' @note Files indicated in \code{runfiles} must be located in a folder named runDir.
+#'   Also, flash and reports folders must be created in the project environment, whose paths will be
+#'   named as flashDir and repDir respectively.
+#' @param runfiles Character indicating which files are going to be processed, often with fastq.gz extension.
+#' @param flash Folder path containing FLASH executable.
+#' @param min.ov Minimum overlap (in nt) between R1 and R2.
+#' @param max.ov Maximum overlap (in nt) between R1 and R2.
+#' @param err.lv Mismatch fraction accepted in overlapping.
 #' @return The function returns a \code{\link{data.frame}} object containing FLASH results
-#'   for your sequenced regions, but also two report files:
+#'   for sequenced regions.
+#'
+#' @return After the execution, a fastq file with extended reads for each pool will be saved in
+#'   the flash folder. Additionaly, two report files will be generated:
 #'   \enumerate{
 #'   \item \code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
 #'     and the yield of the process for each pool.
-#'   \item \code{FLASH_report.txt}: Includes the data returned by the function with FLASH parameters used.
+#'   \item \code{FLASH_report.txt}: Includes the data returned by the function with used FLASH parameters.
 #' }
 #' @import grDevices
 #' @import graphics
 #' @import utils
+#' @import foreach
+#' @import ShortRead
+#' @import Biostrings
 #' @importFrom RColorBrewer brewer.pal
+#' @seealso \code{\link{executeFLASH}}
 #' @export
 #' @examples
 #' runDir <- "./run"
-#' flash <- "C:/FLASH/flash.exe"
+#' repDir <- "./reports"
+#' flashDir <- "./flash"
+#' flash <- "./FLASH/flash.exe"
 #' runfiles <- list.files(runDir)
-#' R1R2toFLASH(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
+#' min.ov <- 20
+#' max.ov <- 300
+#' err.lv <- 0.1
+#' flashres <- R1R2toFLASH(runfiles,flash,min.ov,max.ov,err.lv)
 
 R1R2toFLASH <- function(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
 {
@@ -36,8 +51,12 @@ R1R2toFLASH <- function(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
   if(length(runfiles)==0) {
     runfiles <- list.files(paste(getwd(),"/run",sep=''))
     if(length(runfiles)==0) {
-      stop("Couldn't find any Raw Data file, please indicate correct path")
+      stop("Couldn't find any Raw Data file, please indicate the correct path./n")
     }
+  }
+  # Afegim un test per comprovar que l'executable FLASH existeix.
+  if(!file.exists(flash)){
+    stop("Couldn't find FLASH executable, please indicate the correct path./n")
   }
 
 # La funció sub() permet substituir un patró pel que indiquem com 2n argument
@@ -73,7 +92,7 @@ parts <- parts[parts[,3]=="R1",,drop=FALSE]
 # Defineix les opcions necessàries per a l'execució de FLASH
 # Aquesta variable es guarda com a global, per tal de poder accedir a ella des de la funció
 # 'executeFLASH()' i que no aparegui error
-flash.opts <<- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
+flash.opts <- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
 
 ## Itera sobre el total de pools (nº de fitxers que es generaran) i aplica la funció 'executeFLASH()'
 # del paquet, que permet realitzar l'extensió dels reads R1 i R2 i guardar el nº de reads units (extended)
@@ -83,7 +102,7 @@ flash.opts <<- paste("-m",min.ov,"-M",max.ov,"-x",err.lv)
 # Parteix dels fitxers R1 i R2 de cadascun dels pools, així com el nom del fitxer fastq
 # resultant que es guardarà a la carpeta flash
 flashres <- foreach(i=1:length(out.flnms),.export='executeFLASH',.packages='ShortRead') %do%
-  executeFLASH(R1.flnms[i],R2.flnms[i],out.flnms[i])
+  executeFLASH(R1.flnms[i],R2.flnms[i],flash,flash.opts,out.flnms[i])
 
 # Construeix una matriu 2x2 que inclogui els resultats d'aplicar FLASH per cada pool
 res <- matrix(unlist(flashres),nrow=length(out.flnms),ncol=2,byrow=TRUE) # length(out.flnms)= 2 en aquest cas, que son els pools

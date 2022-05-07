@@ -1,17 +1,19 @@
 #' QCscores
 #'
-#' Applies \code{\link{FastqStreamer}} over a fastq file and returns quality
+#' @title Compute Phred scores by position or by read
+#'
+#' @description Applies \code{\link{FastqStreamer}} over a fastq file and returns quality
 #'   control mesures (Phred scores), either by position or by read.
 #'
-#' This function is only defined for correct execution of \code{\link{PoolQCbyPos}} and \code{\link{PoolQCbyRead}}
+#' @note This function is only defined for correct execution of \code{\link{PoolQCbyPos}} and \code{\link{PoolQCbyRead}}
 #'  functions from the same package.
 #'
-#'
 #' @param flnm Fastq file to be evaluated.
-#' @param ln Amplicon length (by default 301 nt).
-#' @param byPos Logical indicating if QC by position should be done.
-#' @param byRead Logical indicating if QC by read should be done.
-#' @note Arguments \code{byPos} and \code{byRead} are mutually exclusive.
+#' @param ln Amplicon length.
+#' @param byPos Logical indicating if QC by position should be computed.
+#' @param byRead Logical indicating if QC by read should be computed.
+#' Note that Arguments \code{byPos} and \code{byRead} are mutually exclusive.
+#'
 #' @return If argument \code{byPos=TRUE}, the function returns a list including
 #'   the following parameters:
 #'   \enumerate {
@@ -27,10 +29,16 @@
 #'   \item \code{all.fnl30}: The result of dividing all.ln30/all.ln, which is the
 #'     fraction of bases below Q30 for each read.}
 #' @seealso \code{\link{PoolQCbyPos}}, \code{\link{PoolQCbyRead}}, \code{\link{QCplot}}
+#' @import ShortRead
+#' @importFrom stats quantile
 #' @export
+#' @author Alicia Aranda
 
 QCscores <- function(flnm,ln=301,byPos=FALSE,byRead=FALSE) # ln és 301 per defecte, però en realitat és la longitud de l'amplicó
-{ # Defineix una matriu de dimensions 5xln de 0s
+{ if(missing(flnm)|!file.exists(flnm)){
+  stop(paste(flnm,'not found.\n'))}
+
+  # Defineix una matriu de dimensions 5xln de 0s
   fnm.q <- matrix(0,nrow=5,ncol=ln)
   # Vector de 5 0s
   fnm.l <- numeric(5)

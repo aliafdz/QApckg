@@ -2,15 +2,17 @@
 % Please edit documentation in R/conshaplotypes.R
 \name{ConsHaplotypes}
 \alias{ConsHaplotypes}
-\title{ConsHaplotypes}
+\title{Generate consensus haplotypes}
 \usage{
-ConsHaplotypes(pm.res, thr, min.seq.len)
+ConsHaplotypes(trimfiles, pm.res, thr = 0.2, min.seq.len = 150)
 }
 \arguments{
-\item{pm.res}{The list returned by \code{\link{demultiplexprimer}}, including \code{fileTable}
+\item{trimfiles}{Vector including the names of demultiplexed files by specific primer, with fna extension.}
+
+\item{pm.res}{The list returned by \code{\link{demultiplexPrimer}}, including \code{fileTable}
 and \code{poolTable} data frames.}
 
-\item{thr}{Threshold to filter haplotypes at minimum abundance before intersection.}
+\item{thr}{Threshold to filter haplotypes at minimum abundance before multiple alignment.}
 
 \item{min.seq.len}{Threshold to filter haplotypes at minimum length before intersection.}
 }
@@ -20,7 +22,7 @@ The function returns a \code{\link{data.frame}} object containing the intersecti
   (for being below a given frequency threshold or unique to a single strand), overlapping frequency
   between both strands and the common reads (in percentage and nº of reads).
 
-  After execution, two fasta files for each combination of sample and pool will be saved in the MACH folder;
+  After execution, two FASTA files for each combination of sample and pool will be saved in the MACH folder;
   the first includes multiple alignment between forward and reverse strand haplotypes, and the second
   includes the forward and reverse strands intersected. Additionaly, some report files will be generated:
   \enumerate{
@@ -32,36 +34,42 @@ The function returns a \code{\link{data.frame}} object containing the intersecti
     representing the number of intersected and filtered out reads, the intersection yield and global yield.}
 }
 \description{
-Archivos almacenados en la carpeta global del proyecto: “muscle.log”. Es el archivo donde se guardan los
-parámetros de la ejecución de muscle.
-Archivos almacenados en la carpeta reports: "IntersectBarplots.pdf", "IntersectedReads.RData",
-"MA.Intersects.plots.pdf", "MA.Intersects-SummRprt.txt".
-Archivos almacenados en la carpeta tmp: “muscleInFile.fna”, “muscleOutFile.fna”. Se generan al ejecutar el
-programa muscle, son los archivos de entrada y salida del programa.
-Archivos almacenados en la carpeta MACH: 4 archivos .fna por paciente (2 por pool) →
-los que empiezan por MAfwrv corresponden a los resultados del alineamiento múltiple (muscle) de los haplotipos
-de cada muestra (forward y reverse) después de realizar el filtro por abundancia de 0.2%; los que empiezan por
-MACHpl02 se generan después de hacer la intersección entre cadenas FW y RV, incluyen las secuencias fasta de los
-haplotipos que han coincidido entre las cadenas.
+Computes the intersection of forward and reverse strand haplotypes and generates some report files.
 }
 \details{
-Computes the intersection of forward and reverse strand haplotypes and generates some report files.
+ConsHaplotypes
 
-This function is designed to be used after the execution of \code{\link{demultiplexprimer}} function
-  from the same package. After the generation of fasta files containing forward and reverse strand reads
+This function is designed to be used after the execution of \code{\link{demultiplexPrimer}} function
+  from the same package. After the generation of FASTA files containing forward and reverse strand reads
   for the evaluated samples, \code{\link{ConsHaplotypes}} executes multiple alignment with \code{\link{muscle}} and
-  returns the consensus haplotypes with \code{\link{IntersectStrandHpls}}.
+  returns the consensus haplotypes using \code{\link{IntersectStrandHpls}}, that will be saved using
+  the helper function \code{\link{SaveHaplotypes}}.
+}
+\note{
+Files indicated in \code{trimfiles} must be located in a directory named trimDir, and
+  a directory for resulting FASTA files with intersected reads and the results of multiple alignment
+  must be named as mach.Dir. Also, a reports folder must be created in the project environment, whose path will be
+  named as repDir.
 }
 \examples{
+splitDir <- "./splits"
+splitfiles <- list.files(splitDir)
+samples <- read.table("./data/samples.csv", sep="\t", header=T,
+                      colClasses="character",stringsAsFactors=F)
+mids <- read.table("./data/mids.csv", sep="\t", header=T,
+                   stringsAsFactors=F)
 # Apply previous function from QA analysis
-pm.res <- demultiplexprimer(splitfiles,samples,primers)
+pm.res <- demultiplexPrimer(splitfiles,samples,primers)
 # Define necessary parameters
 min.seq.len <- 150
 min.rd <-   1
 thr <- 0.2
-ConsHaplotypes(pm.res, thr, min.seq.len)
+int.res <- ConsHaplotypes(pm.res, thr, min.seq.len)
 
 }
 \seealso{
-\code{\link{muscle}}
+\code{\link{muscle}},\code{\link{IntersectStrandHpls}},\code{\link{demultiplexPrimer}},\code{\link{SaveHaplotypes}}
+}
+\author{
+Alicia Aranda
 }
