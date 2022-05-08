@@ -29,8 +29,6 @@ A scatter plot with desired values will be shown in the active plots window.
 Draws a scatter plot with Phred score values by read position.
 }
 \details{
-QCplot
-
 \code{fvnm1} and \code{fvnm2} arguments are obtanied from the \code{\link{QCscores}}
   function with argument \code{byPos=TRUE}.
 }
@@ -40,7 +38,7 @@ This function is only defined for correct execution of \code{\link{PoolQCbyPos}}
 }
 \examples{
 flashDir <- "./flash"
-flashfiles <- list.files(flashDir)
+flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 lst1 <- QCscores(file.path(flashDir,flashfiles[1]),byPos=T)
 fvnm1 <- lst1$fvnq
 QCplot(fvnm1,FL=TRUE) # QC plot for FLASH fastq file

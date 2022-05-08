@@ -1,15 +1,10 @@
-#' PoolQCbyRead
-#'
 #' @title Evaluate QC by read
 #'
 #' @description This function evaluates fastq files after the execution of FLASH program to extend
 #'   paired-end reads, and returns QC by read plots in pdf format.
 #'
-#' @note Files indicated in \code{flashfiles} must be located in a folder named flashDir.
-#'   Also, a reports folder must be created in the project environment, whose path will be
-#'   named as repDir.
 #'
-#' @param flashfiles Vector including the names of FLASH processed files, with fastq extension.
+#' @param flashfiles Vector including the paths of FLASH processed files, with fastq extension.
 #' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
@@ -24,10 +19,12 @@
 #' @examples
 #' flashDir <- "./flash"
 #' repDir <- "./reports"
-#' flashfiles <- list.files(flashDir)
+#' # Save the file names with complete path
+#' flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+#' # Get data
 #' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                      colClasses="character",stringsAsFactors=F)
-#' primers <- read.table("./data/mids.csv", sep="\t", header=T,
+#' primers <- read.table("./data/primers.csv", sep="\t", header=T,
 #'                       stringsAsFactors=F)
 #' PoolQCbyRead(flashfiles,samples,primers)
 #' @author Alicia Aranda
@@ -45,18 +42,27 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
       stop("Couldn't find FLASH result files, please indicate correct path.\n")
     }}
 
+  # Si cap dels fitxers indicats a la carpeta flash no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(any(!file.exists(flashfiles))){
+    stop(paste(flashfiles[!file.exists(flashfiles)],"does not exist.\n"))
+  }
+
   # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
   # i mostra un missatge d'error
-  if(length(samples)==0||length(primers)==0) {
+  if(length(samples)==0|length(primers)==0) {
     stop("Please check data folder files, something is missing.\n")}
 
-  ###  Guarda la llista de pools en el fitxer samples
-  pools <- unique(samples$Pool.Nm)
+  # Si no existeix la carpeta on es guarden els fitxers resultants de la funció,
+  # es genera automàticament a la carpeta de treball
+  if(!dir.exists("./reports")) {
+    dir.create("./reports")}
+    repDir <- "./reports"
 
   ### Fitxers que resulten de Flash
-  flnms <- flashfiles
+  flnms <- basename(flashfiles)
   # Guarda del fitxer només el nom del pool seguit de S1 o S2
-  snms <- sub("_flash\\.fastq$","",flashfiles)
+  snms <- sub("_flash\\.fastq$","",flnms)
   # Genera una taula amb el nom del pool en una columna i S1 o S2 en una altra
   parts <- t(sapply(snms,function(str) strsplit(str,split="_")[[1]]))
   if(is.vector(parts))
@@ -66,8 +72,8 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
   ### Amb 'sapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
   # de la carpeta flash per calcular les puntuacions per read (argument byRead)
   flashdata <- sapply(c(1:length(snms)),function(i){
-    QCscores(file.path(flashDir,flashfiles[i]),byRead=T)})
-  colnames(flashdata) <- flashfiles
+    QCscores(flashfiles[i],byRead=T)})
+  colnames(flashdata) <- flnms
 
 ######## POOLQCBYREAD
 

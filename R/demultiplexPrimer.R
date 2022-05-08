@@ -1,5 +1,3 @@
-#' demultiplexPrimer
-#'
 #' @title Trim specific primer sequences
 #'
 #' @description Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.
@@ -12,12 +10,8 @@
 #'   primer sequence in 5' end and FW primer sequence in 3' end, obtaining the reverse complement of all reads
 #'   identified as reverse strands. So, both strands are obtained in a way that facilitates their intersection.
 #'
-#' @note Files indicated in \code{splitfiles} must be located in a directory named splitDir, and
-#'   a directory for resulting FASTA files with trimmed reads must be named as trimDir.
-#'   Also, a reports folder must be created in the project environment, whose path will be
-#'   named as repDir.
 #'
-#' @param splitfiles Vector including the names of demultiplexed files by MID, with fna extension.
+#' @param splitfiles Vector including the paths of demultiplexed files by MID, with fna extension.
 #' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
@@ -32,18 +26,19 @@
 #'     including their associated strand, mean read length, total reads and total haplotypes obtained.}
 #'   \item{poolTable}{A table with the number of total trimmed reads and the yield of the process by pool.}
 #'
-#'   After execution, a FASTA file for each combination of strand, MID and pool will be saved in the trim folder,
-#'   including its associated reads. Additionaly, some report files will be generated:
+#'   After execution, a FASTA file for each combination of strand, MID and pool will be saved in a newly
+#'   created trim folder, including its associated reads.
+#'   Additionaly, some report files will be generated in a reports folder:
 #'   \enumerate{
-#'   \item \code{AmpliconLengthsRprt.txt}: Includes the amplicon lengths of both strands
-#'     for each sample (with their corresponding MID identifier).
-#'   \item \code{AmpliconLengthsPlot.pdf}: Includes a barplot for each sample representing the amplicon
-#'     lengths of both strands.
-#'   \item \code{SplitByPrimersOnFlash.txt}: Includes a table of reads identified by primer, total reads identified by patient
-#'     and the yield by pool.
-#'   \item \code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: Includes some plots representing primer matches
-#'     by patient (in nº of reads) and the coverage of forward/reverse matches by pool.
-#'   \item \code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}
+#'   \item{\code{AmpliconLengthsRprt.txt}: Includes the amplicon lengths of both strands
+#'     for each sample (with their corresponding MID identifier).}
+#'   \item{\code{AmpliconLengthsPlot.pdf}: Includes a barplot for each sample representing the amplicon
+#'     lengths of both strands.}
+#'   \item{\code{SplitByPrimersOnFlash.txt}: Includes a table of reads identified by primer, total reads identified by patient
+#'     and the yield by pool.}
+#'   \item{\code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: Includes some plots representing primer matches
+#'     by patient (in nº of reads) and the coverage of forward/reverse matches by pool.}
+#'   \item{\code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}}
 #'
 #' @import ShortRead
 #' @import Biostrings
@@ -52,6 +47,7 @@
 #' @export
 #' @seealso \code{\link{demultiplexMID}},\code{\link{primermatch}}
 #' @examples
+#' # Set parameters
 #' prmm <- 3
 #' min.len <- 180
 #' # The expected window for primer sequences will depend on the presence of
@@ -59,7 +55,9 @@
 #' target.st <- 1
 #' target.end <- 100
 #' splitDir <- "./splits"
-#' splitfiles <- list.files(splitDir)
+#' # Save the file names with complete path
+#' splitfiles <- list.files(splitDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+#' # Get data
 #' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                       colClasses="character",stringsAsFactors=F)
 #' mids <- read.table("./data/mids.csv", sep="\t", header=T,
@@ -85,6 +83,22 @@ demultiplexPrimer <- function(splitfiles,samples,primers,prmm=3,min.len=180,targ
   if(length(samples)==0||length(primers)==0) {
     stop("Please check data folder files, something is missing.\n")
   }
+
+  # Si cap dels fitxers indicats a la carpeta splits no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(any(!file.exists(splitfiles))){
+    stop(paste(splitfiles[!file.exists(splitfiles)],"does not exist.\n"))
+  }
+
+  # Si no existeixen les carpetes on es guarden els fitxers resultants de la funció,
+  # es generen automàticament a la carpeta de treball
+  if(!dir.exists("./trim")) {
+    dir.create("./trim")}
+  trimDir <- "./trim"
+
+  if(!dir.exists("./reports")) {
+    dir.create("./reports")}
+  repDir <- "./reports"
 
 ### Els primers específics emprats en l'amplificació (que afegeixen la cua M13 per seqüenciar) s'han d'eliminar
 # dels amplicons a estudiar, ja que a l'emprar el mateix primer per totes les mostres es perden tots els possibles

@@ -28,8 +28,6 @@ Sorts and renames haplotypes by the number of mutations with respect to the
   dominant haplotype, and by abundance, and saves their sequences in a FASTA file.
 }
 \details{
-SaveHaplotypes
-
 This function is similar to \code{\link{SortByMutations}} function from \code{QSutils}
   package but has new features. For example, in this case haplotypes with a huge number
   of mutations with respect to the dominant one are discarted, and columns with all gaps

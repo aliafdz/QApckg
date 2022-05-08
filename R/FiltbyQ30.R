@@ -1,5 +1,3 @@
-#' FiltbyQ30
-#'
 #' @title Filter haplotypes by Q30
 #'
 #' @description This function applies \code{\link{FastqStreamer}} over a fastq file and removes
@@ -7,7 +5,7 @@
 #'   in a new fastq file.
 #'
 #' @param max.pct The maximum percentage of bases below Q30 allowed in reads (by default,5\%).
-#' @param flashfiles Vector including the names of files that are going to be processed,
+#' @param flashfiles Vector including the paths of files that are going to be processed,
 #'   with fastq extension.
 #' @param flashres Table of results obtained after the execution of \code{\link{R1R2toFLASH}}
 #'   function.
@@ -16,33 +14,29 @@
 #'   the same package. If \code{flashres} is not specified but FLASH extension was previously
 #'   done, the function will try to load the FLASH results table from the reports folder.
 #'
-#' @note Files indicated in \code{flashfiles} must be located in a folder named flashDir.
-#'   Also, flashFilt and reports folders must be created in the project environment, whose paths will be
-#'   named as flashFiltDir and repDir respectively.
-#'
 #' @return A \code{\link{data.frame}} object containing FLASH and Filtering results.
 #' @return After the execution, a fastq file with remaining reads for each pool will be saved in
-#'   the flashFilt folder. Additionaly, two report files will be generated:
+#'   a new flashFilt folder (if it is not previously created). Additionaly, two report files will be
+#'   generated in a reports folder:
 #'   \enumerate{
-#'   \item \code{FiltQ30.barplot.pdf}: Includes a first Bar plot representing raw reads,
+#'   \item{\code{FiltQ30.barplot.pdf}: Includes a first Bar plot representing raw reads,
 #'     extended reads by FLASH and filtered reads, and a second Bar plot with
-#'     the yield by process for each pool.
-#'   \item \code{FiltQ30_report.txt}: Includes the same data returned by the function.
+#'     the yield by process for each pool.}
+#'   \item{\code{FiltQ30_report.txt}: Includes the same data returned by the function.}
 #' }
 #'   The results table obtained includes two new columns with respect to FLASH results
 #'     table, named FiltQ30 (number of filtered reads) and Raw (total sequencing reads).
 #'
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom ShortRead FastqStreamer
+#' @import ShortRead
 #' @seealso \code{\link{R1R2toFLASH}}, \code{\link{FastqStreamer}}
 #' @export
 #' @examples
 #' runDir <- "./run"
-#' runfiles <- list.files(runDir)
-#' flash <- "C:/FLASH/flash.exe"
+#' runfiles <- list.files(runDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+#' flash <- "./FLASH/flash.exe"
 #' flashDir <- "./flash"
-#' repDir <- "./reports"
-#' flashfiles <- list.files(flashDir)
+#' flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 #' flashres <- R1R2toFLASH(runfiles,flash)
 #' filtres <- FiltbyQ30(max.pct=0.05,flashfiles,flashres)
 #' @author Alicia Aranda
@@ -54,7 +48,7 @@ FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
   if(!exists('flashres')|missing(flashres)){
     tryCatch(
       expr = {
-        flashres <- read.table(file.path(repDir,"FLASH_report.txt"),skip=8)},
+        flashres <- read.table("./reports/FLASH_report.txt",skip=8)},
       # Si no pot trobar la taula resultant de FLASH, atura l'execució i genera un
       # missatge d'error
       error = function(e){
@@ -71,9 +65,25 @@ FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
       stop("Couldn't find FLASH result files, please indicate correct path.\n")
     }}
 
+  # Si cap dels fitxers indicats a la carpeta flash no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(any(!file.exists(flashfiles))){
+    stop(paste(flashfiles[!file.exists(flashfiles)],"does not exist.\n"))
+  }
+
+  # Si no existeixen les carpetes on es guarden els fitxers resultants de la funció,
+  # es generen automàticament a la carpeta de treball
+  if(!dir.exists("./flashFilt")) {
+    dir.create("./flashFilt")}
+    flashFiltDir <- "./flashFilt"
+
+  if(!dir.exists("./reports")) {
+    dir.create("./reports")}
+    repDir <- "./reports"
+
 ### Fitxers que resulten de Flash
 # Guarda del fitxer només el nom del pool seguit de S1 o S2
-snms <- sub("_flash\\.fastq$","",flashfiles)
+snms <- sub("_flash\\.fastq$","",basename(flashfiles))
 
 # Genera una taula amb el nom del pool en una columna i S1 o S2 en una altra
 parts <- t(sapply(snms,function(str) strsplit(str,split="_")[[1]]))
@@ -86,9 +96,6 @@ oflnms <- paste(parts[,"PatID"],"flashFilt.fastq",sep="_")
 # Indica la ruta dels fitxers output en la carpeta flashFilt
 oflnms <- file.path(flashFiltDir,oflnms)
 
-# Guarda la ruta dels fitxers inclosos en la carpeta Flash
-flnms <- file.path(flashDir,flashfiles)
-
 ### Loop sobre pools
 # Vector que inclou tants 0s com nº de pools
 freads <- integer(length(snms))
@@ -100,7 +107,7 @@ for(i in 1:length(snms))
     file.remove(oflnms[i])
 
   ### Aplica streamer (iteració) en el fitxer fastq avaluat
-  strm <- FastqStreamer(flnms[i])
+  strm <- FastqStreamer(flashfiles[i])
 
   # Aquesta variable és per la funció 'writeFastq()' i permet generar el fitxer fastq
   # de nou

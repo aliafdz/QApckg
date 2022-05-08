@@ -1,5 +1,3 @@
-#' QCplot
-#'
 #' @title QC plot by read position
 #'
 #' @description Draws a scatter plot with Phred score values by read position.
@@ -27,7 +25,7 @@
 #' @seealso \code{\link{PoolQCbyPos}}, \code{\link{QCscores}}
 #' @examples
 #' flashDir <- "./flash"
-#' flashfiles <- list.files(flashDir)
+#' flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 #' lst1 <- QCscores(file.path(flashDir,flashfiles[1]),byPos=T)
 #' fvnm1 <- lst1$fvnq
 #' QCplot(fvnm1,FL=TRUE) # QC plot for FLASH fastq file

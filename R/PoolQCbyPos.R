@@ -1,37 +1,35 @@
-#' PoolQCbyPos
-#'
 #' @title Evaluate QC by position
 #'
 #' This function evaluates fastq files before and after the execution of FLASH program to extend
 #'   paired-end reads, and returns QC by position plots in pdf format.
 #' It can be applied also after filtering FLASH fastq files by Phred Score.
 #'
-#' @note Files indicated in \code{runfiles} and \code{flashfiles} arguments must be located in different folders,
-#'   whose paths will be named as runDir and flashDir respectively. Also, a reports folder must be created
-#'   in the project environment, whose path will be named as repDir.
 #'
-#' @param runfiles Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension.
+#' @param runfiles Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
 #'   If the function is applied for filtered fastq files, this argument must be NA or missing.
-#' @param flashfiles Vector including the names of FLASH processed/filtered files, with fastq extension.
+#' @param flashfiles Vector including the paths of FLASH processed/filtered files, with fastq extension.
 #' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
 #'   \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
 #'     and \code{Aa.lpos} columns.
 #'
-#' @return After execution, a pdf file for each pool used in the experiment will be saved in the
-#'   reports folder, and a message indicating that the files are generated will appear in console.
+#' @return After execution, a pdf file for each pool used in the experiment will be saved in a
+#'   reports folder (if it is not previously defined, the function will create this folder),
+#'   and a message indicating that the files are generated will appear in console.
 #'
 #' @export
 #' @examples
 #' runDir <- "./run"
 #' flashDir <- "./flash"
 #' repDir <- "./reports"
-#' runfiles <- list.files(runDir)
-#' flashfiles <- list.files(flashDir)
+#' # Save the file names with complete path
+#' runfiles <- list.files(runDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+#' flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+#' # Get data
 #' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                      colClasses="character",stringsAsFactors=F)
-#' primers <- read.table("./data/mids.csv", sep="\t", header=T,
+#' primers <- read.table("./data/primers.csv", sep="\t", header=T,
 #'                       stringsAsFactors=F)
 #' PoolQCbyPos(flashfiles,samples,primers,runfiles)
 #' @author Alicia Aranda
@@ -50,27 +48,44 @@ if(missing(runfiles)){
 # intenta buscar la ruta correcta a partir del directori de treball
 # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
 if(!missing(runfiles)&length(runfiles)==0) {
-  runfiles <- list.files(paste(getwd(),"/run",sep=''))
+  runfiles <- list.files(paste(getwd(),"/run",sep=''),recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
   if(length(runfiles)==0) {
     stop("Couldn't find any Raw Data files, please indicate correct path.\n")
   }
 }
+  # Si cap dels fitxers indicats a la carpeta run no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(!missing(runfiles)&any(!file.exists(runfiles))){
+    stop(paste(runfiles[!file.exists(runfiles)],"does not exist.\n"))
+  }
 
 # Si la ruta on es troben els fitxers flash no està ben especificada, intenta buscar la
 # ruta correcta a partir del directori de treball
 # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
 if(length(flashfiles)==0) {
-  flashfiles <- list.files(paste(getwd(),"/flash",sep=''))
+  flashfiles <- list.files(paste(getwd(),"/flash",sep=''),recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
   if(length(flashfiles)==0) {
     stop("Couldn't find FLASH result files, please indicate correct path.\n")
   }
 }
+  # Si cap dels fitxers indicats a la carpeta flash no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(any(!file.exists(flashfiles))){
+    stop(paste(flashfiles[!file.exists(flashfiles)],"does not exist.\n"))
+  }
 
 # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
 # i mostra un missatge d'error
-if(length(samples)==0||length(primers)==0) {
+if(length(samples)==0|length(primers)==0) {
   stop("Please check data folder files, something is missing.\n")
 }
+
+  # Si no existeix la carpeta on es guarden els fitxers resultants de la funció,
+  # es genera automàticament a la carpeta de treball
+  if(!dir.exists("./reports")) {
+    dir.create("./reports")}
+    repDir <- "./reports"
+
 
 ###  Guarda la llista de pools en el fitxer samples
 pools <- unique(samples$Pool.Nm)
@@ -88,11 +103,13 @@ pln <- sapply(pools,function(p)
   idx <- which(primers$Ampl.Nm %in% samples$Primer.ID[idx])
   # Calcula el màxim de la resta entre la posició del primer reverse de l'amplicó avaluat i la posició del forward
   max(primers$RV.pos[idx]-primers$FW.pos[idx]+1)})
+# Guarda el nom dels fitxers de flash sense la ruta completa
+ffiles <- basename(flashfiles)
 
 if(!is.na(runfiles[1])){
 ### Fitxers que resulten de Flash
 # Guarda del fitxer només el nom del pool seguit de S1 o S2
-snms <- sub("_flash\\.fastq$","",flashfiles)
+snms <- sub("_flash\\.fastq$","",ffiles)
 
 # Genera una taula amb el nom del pool en una columna i S1 o S2 en una altra
 parts <- t(sapply(snms,function(str) strsplit(str,split="_")[[1]]))
@@ -106,35 +123,36 @@ pln <- pln + 2*(20+10)
 ### Fitxers R1 i R2 originals, de la carpeta run
 # Guarda el nom dels fitxers R1 i R2 buscant quins contenen el terme desitjar en els noms
 # dels fitxers run
-R1.flnms <- runfiles[which(grepl('R1',runfiles))]
-R2.flnms <- runfiles[which(grepl('R2',runfiles))]
+rfiles <- basename(runfiles)
+R1.flnms <- rfiles[which(grepl('R1',runfiles))]
+R2.flnms <- rfiles[which(grepl('R2',runfiles))]
 
 ### Sincronitza la longitud dels amplicons dels pools amb el nom d'aquests
 pln <- pln[parts[,"PatID"]]
 
 ### Amb 'sapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
 # de la carpeta run per calcular les puntuacions per posició (argument byPos)
-rundata <- sapply(c(1:length(runfiles)),function(i){
-  QCscores(file.path(runDir,runfiles)[i],byPos=T)})
+rundata <- sapply(c(1:length(rfiles)),function(i){
+  QCscores(runfiles[i],byPos=T)})
 # Assigna cada resultat al seu nom de fitxer corresponent
-colnames(rundata) <- runfiles
+colnames(rundata) <- rfiles
 
 ### Amb 'sapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
 # de la carpeta flash per calcular les puntuacions per posició (argument byPos)
 flashdata <- sapply(c(1:length(snms)),function(i){
-  QCscores(file.path(flashDir,flashfiles[i]),ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
-colnames(flashdata) <- flashfiles
+  QCscores(flashfiles[i],ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
+colnames(flashdata) <- ffiles
 }
 else{ # Si no hi ha fitxers run perquè estem aplicant sobre FLASH filtrat per Q30
   ### Fitxers que resulten de Flash després de filtrar per Q30
   # Guarda el nom dels pools treient el sufix dels fitxers de flashFiltDir
-  snms <- sub("_flashFilt\\.fastq$","",flashfiles)
+  snms <- sub("_flashFilt\\.fastq$","",ffiles)
   # Sincronitza la longitud dels amplicons dels pools amb el nom d'aquests
   pln <- pln[snms]
   # Aplica la funció QCscores per calcular la qualitat per posició i fer els gràfics corresponents
   flashdata <- sapply(c(1:length(snms)),function(i){
-    QCscores(file.path(flashFiltDir,flashfiles[i]),ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
-  colnames(flashdata) <- flashfiles
+    QCscores(flashfiles[i],ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
+  colnames(flashdata) <- ffiles
 }
 
 ### Loop sobre pools
@@ -227,4 +245,4 @@ for(i in 1:length(snms))
 
   dev.off()
 }
-return(cat('The generated files are in the reports folder\n'))}
+return(cat('The generated files are in the reports folder.\n'))}

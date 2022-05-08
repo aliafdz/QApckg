@@ -1,27 +1,25 @@
-#' R1R2toFLASH
-#'
 #' @title Run FLASH to extend paired-end reads and generate report graphs.
 #' @author Alicia Aranda
-#' @description This function applies \code{\link{executeFLASH}} over R1 and R2 reads
-#'   for multiple sample pools and returns
 #'
-#' @note Files indicated in \code{runfiles} must be located in a folder named runDir.
-#'   Also, flash and reports folders must be created in the project environment, whose paths will be
-#'   named as flashDir and repDir respectively.
-#' @param runfiles Character indicating which files are going to be processed, often with fastq.gz extension.
-#' @param flash Folder path containing FLASH executable.
-#' @param min.ov Minimum overlap (in nt) between R1 and R2.
-#' @param max.ov Maximum overlap (in nt) between R1 and R2.
+#' @description This function applies \code{\link{executeFLASH}} over R1 and R2 reads
+#'   for multiple sample pools and returns a file with the extended reads for each pool.
+#'
+#'
+#' @param runfiles Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
+#' @param flash File path of FLASH executable.
+#' @param min.ov Minimum overlap (in nt) between R1 and R2 reads.
+#' @param max.ov Maximum overlap (in nt) between R1 and R2 reads.
 #' @param err.lv Mismatch fraction accepted in overlapping.
+#'
 #' @return The function returns a \code{\link{data.frame}} object containing FLASH results
 #'   for sequenced regions.
 #'
 #' @return After the execution, a fastq file with extended reads for each pool will be saved in
-#'   the flash folder. Additionaly, two report files will be generated:
+#'   a new folder named flash. Additionaly, two files will be saved in a reports folder:
 #'   \enumerate{
-#'   \item \code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
-#'     and the yield of the process for each pool.
-#'   \item \code{FLASH_report.txt}: Includes the data returned by the function with used FLASH parameters.
+#'   \item{\code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
+#'     and the yield of the process for each pool.}
+#'   \item{\code{FLASH_report.txt}: Includes the data returned by the function with used FLASH parameters.}
 #' }
 #' @import grDevices
 #' @import graphics
@@ -34,10 +32,9 @@
 #' @export
 #' @examples
 #' runDir <- "./run"
-#' repDir <- "./reports"
-#' flashDir <- "./flash"
 #' flash <- "./FLASH/flash.exe"
-#' runfiles <- list.files(runDir)
+#' # Save the file names with complete path
+#' runfiles<-list.files(runDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 #' min.ov <- 20
 #' max.ov <- 300
 #' err.lv <- 0.1
@@ -49,19 +46,38 @@ R1R2toFLASH <- function(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
 # ruta correcta a partir del directori de treball
   # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
   if(length(runfiles)==0) {
-    runfiles <- list.files(paste(getwd(),"/run",sep=''))
+    runfiles <- list.files(paste(getwd(),"/run",sep=''),recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
     if(length(runfiles)==0) {
-      stop("Couldn't find any Raw Data file, please indicate the correct path./n")
+      stop("Couldn't find any Raw Data file, please indicate the correct path.\n")
     }
   }
-  # Afegim un test per comprovar que l'executable FLASH existeix.
-  if(!file.exists(flash)){
-    stop("Couldn't find FLASH executable, please indicate the correct path./n")
+  # Si cap dels fitxers indicats a la carpeta run no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(any(!file.exists(runfiles))){
+    stop(paste(runfiles[!file.exists(runfiles)],"does not exist.\n"))
   }
+
+  # Afegim un test per comprovar que l'executable FLASH existeix
+  if(!file.exists(flash)){
+    stop("Couldn't find FLASH executable, please indicate the correct path.\n")
+  }
+
+  # Si no existeixen les carpetes on es guarden els fitxers resultants de la funció,
+  # es generen automàticament a la carpeta de treball
+  if(!dir.exists("./flash")) {
+    dir.create("./flash")}
+    flashDir <- "./flash"
+
+  if(!dir.exists("./reports")) {
+  dir.create("./reports")}
+  repDir <- "./reports"
+
+# Guarda amb la funció 'basename()' el nom dels arxius de la carpeta run, sense la ruta completa
+flnms <- basename(runfiles)
 
 # La funció sub() permet substituir un patró pel que indiquem com 2n argument
 # En aquest cas, les variables runfiles i snms son idèntiques (de moment)
-snms <- sub("\\.fastq$","",runfiles)
+snms <- sub("\\.fastq$","",flnms)
 
 # Taula on es disposa els nom de cada fitxer fastq en la primera columna i després es
 # separa cadascun del termes del nom del fitxer en successives columnes
@@ -71,12 +87,9 @@ parts <- parts[,-c(3,5)]
 # Assigna els noms a les columnes: ID pacient, ID mostra/pool, read
 colnames(parts) <- c("PatID","SmplID","Read")
 
-# Guarda a la variable la ruta dels fitxers que es troben a la carpeta run
-flnms <- file.path(runDir,runfiles)
-
 # Dels 4 fitxers que hi havia, guarda en 2 variables els que corresponen a R1 i R2
-R1.flnms <- flnms[parts[,3]=="R1"] # parts[,3] = columna 3 (read) de la taula parts
-R2.flnms <- flnms[parts[,3]=="R2"]
+R1.flnms <- runfiles[parts[,3]=="R1"] # parts[,3] = columna 3 (read) de la taula parts
+R2.flnms <- runfiles[parts[,3]=="R2"]
 
 # Guarda dos noms de fitxer corresponents a R1: pool, ID de mostra i extensió flash.fastq
 # Com hi ha 2 fitxers amb R1, vol dir que avaluem 2 regions o pools

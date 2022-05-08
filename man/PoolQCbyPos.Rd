@@ -11,7 +11,7 @@ It can be applied also after filtering FLASH fastq files by Phred Score.}
 PoolQCbyPos(flashfiles, samples, primers, runfiles)
 }
 \arguments{
-\item{flashfiles}{Vector including the names of FLASH processed/filtered files, with fastq extension.}
+\item{flashfiles}{Vector including the paths of FLASH processed/filtered files, with fastq extension.}
 
 \item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
@@ -20,30 +20,32 @@ PoolQCbyPos(flashfiles, samples, primers, runfiles)
 \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
   and \code{Aa.lpos} columns.}
 
-\item{runfiles}{Vector including the names of Illumina MiSeq Raw Data files, often with fastq.gz extension.
+\item{runfiles}{Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
 If the function is applied for filtered fastq files, this argument must be NA or missing.}
 }
 \value{
-After execution, a pdf file for each pool used in the experiment will be saved in the
-  reports folder, and a message indicating that the files are generated will appear in console.
+After execution, a pdf file for each pool used in the experiment will be saved in a
+  reports folder (if it is not previously defined, the function will create this folder),
+  and a message indicating that the files are generated will appear in console.
 }
 \description{
-PoolQCbyPos
-}
-\note{
-Files indicated in \code{runfiles} and \code{flashfiles} arguments must be located in different folders,
-  whose paths will be named as runDir and flashDir respectively. Also, a reports folder must be created
-  in the project environment, whose path will be named as repDir.
+Evaluate QC by position
+
+This function evaluates fastq files before and after the execution of FLASH program to extend
+  paired-end reads, and returns QC by position plots in pdf format.
+It can be applied also after filtering FLASH fastq files by Phred Score.
 }
 \examples{
 runDir <- "./run"
 flashDir <- "./flash"
 repDir <- "./reports"
-runfiles <- list.files(runDir)
-flashfiles <- list.files(flashDir)
+# Save the file names with complete path
+runfiles <- list.files(runDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+# Get data
 samples <- read.table("./data/samples.csv", sep="\t", header=T,
                      colClasses="character",stringsAsFactors=F)
-primers <- read.table("./data/mids.csv", sep="\t", header=T,
+primers <- read.table("./data/primers.csv", sep="\t", header=T,
                       stringsAsFactors=F)
 PoolQCbyPos(flashfiles,samples,primers,runfiles)
 }

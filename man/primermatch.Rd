@@ -23,8 +23,6 @@ This function requires the result tables named \code{FlTbl, PoolTbl} and \code{p
 Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
 }
 \details{
-primermatch
-
 This function is only defined for correct execution of \code{\link{demultiplexPrimer}} function from the same package, so it
   cannot be executed individually.
 }

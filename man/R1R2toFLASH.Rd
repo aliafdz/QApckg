@@ -7,13 +7,13 @@
 R1R2toFLASH(runfiles, flash, min.ov = 20, max.ov = 300, err.lv = 0.1)
 }
 \arguments{
-\item{runfiles}{Character indicating which files are going to be processed, often with fastq.gz extension.}
+\item{runfiles}{Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.}
 
-\item{flash}{Folder path containing FLASH executable.}
+\item{flash}{File path of FLASH executable.}
 
-\item{min.ov}{Minimum overlap (in nt) between R1 and R2.}
+\item{min.ov}{Minimum overlap (in nt) between R1 and R2 reads.}
 
-\item{max.ov}{Maximum overlap (in nt) between R1 and R2.}
+\item{max.ov}{Maximum overlap (in nt) between R1 and R2 reads.}
 
 \item{err.lv}{Mismatch fraction accepted in overlapping.}
 }
@@ -22,31 +22,22 @@ The function returns a \code{\link{data.frame}} object containing FLASH results
   for sequenced regions.
 
 After the execution, a fastq file with extended reads for each pool will be saved in
-  the flash folder. Additionaly, two report files will be generated:
+  a new folder named flash. Additionaly, two files will be saved in a reports folder:
   \enumerate{
-  \item \code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
-    and the yield of the process for each pool.
-  \item \code{FLASH_report.txt}: Includes the data returned by the function with used FLASH parameters.
+  \item{\code{FLASH_barplot.pdf}: Bar plots representing extended vs not extended reads
+    and the yield of the process for each pool.}
+  \item{\code{FLASH_report.txt}: Includes the data returned by the function with used FLASH parameters.}
 }
 }
 \description{
 This function applies \code{\link{executeFLASH}} over R1 and R2 reads
-  for multiple sample pools and returns
-}
-\details{
-R1R2toFLASH
-}
-\note{
-Files indicated in \code{runfiles} must be located in a folder named runDir.
-  Also, flash and reports folders must be created in the project environment, whose paths will be
-  named as flashDir and repDir respectively.
+  for multiple sample pools and returns a file with the extended reads for each pool.
 }
 \examples{
 runDir <- "./run"
-repDir <- "./reports"
-flashDir <- "./flash"
 flash <- "./FLASH/flash.exe"
-runfiles <- list.files(runDir)
+# Save the file names with complete path
+runfiles<-list.files(runDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 min.ov <- 20
 max.ov <- 300
 err.lv <- 0.1

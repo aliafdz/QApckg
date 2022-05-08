@@ -14,7 +14,7 @@ demultiplexMID(
 )
 }
 \arguments{
-\item{flashffiles}{Vector including the names of FLASH filtered files, with fastq extension.}
+\item{flashffiles}{Vector including the paths of FLASH filtered files, with fastq extension.}
 
 \item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
@@ -32,12 +32,14 @@ A list containing the following:
   \item{nreads}{A table with the number of reads
     identified for each MID.}
   \item{by.pools}{A table with the coverage of reads demultiplexed by pool.}
-  After execution, a FASTA file for each combination of MID and pool will be saved in the splits folder,
-  including its associated reads. Additionaly, two report files will be generated:
+
+After execution, a FASTA file for each combination of MID and pool will be saved in a splits folder
+  (that will be created in working directory), including its associated reads.
+  Additionaly, two report files will be generated in a reports folder:
   \enumerate{
-  \item \code{SplidByMIDs.barplots.pdf}: Includes a first barplot representing \code{nreads} data values,
-    and a second plot with the \code{by.pools} data values.
-  \item \code{SplidByMIDs.Rprt.txt}: Includes the same data tables returned by the function.}
+  \item{\code{SplidByMIDs.barplots.pdf}: Includes a first barplot representing \code{nreads} data values,
+    and a second plot with the \code{by.pools} data values.}
+  \item{\code{SplidByMIDs.Rprt.txt}: Includes the same data tables returned by the function.}}
 }
 \description{
 Demultiplex reads by identifying MID sequences within windows of expected positions in the sequenced reads.
@@ -45,26 +47,18 @@ Demultiplex reads by identifying MID sequences within windows of expected positi
   or origins.
 
 It is important to note that MID sequences will be not trimmed from reads, they are only identified for
-  association with each sample.
-}
-\details{
-demultiplexMID
-}
-\note{
-Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
-  a directory for resulting FASTA files with demultiplexed reads must be named as splitDir.
-  Also, a reports folder must be created in the project environment, whose path will be
-  named as repDir.
+  associate them with each sample.
 }
 \examples{
-repDir <- "./reports"
-splitDir <- "./splits"
 flashFiltDir <- "./flashFilt"
-flashffiles <- list.files(flashFiltDir)
+# Save the file names with complete path
+flashffiles <- list.files(flashFiltDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+# Get data
 samples <- read.table("./data/samples.csv", sep="\t", header=T,
                       colClasses="character",stringsAsFactors=F)
 mids <- read.table("./data/mids.csv", sep="\t", header=T,
                    stringsAsFactors=F)
+# Set parameters
 maxdif <- 1
 mid.start <- 1
 mid.end <- 40

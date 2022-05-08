@@ -1,5 +1,3 @@
-#' SaveHaplotypes
-#'
 #' @title Save consensus haplotypes after sorting by mutation and abundance
 #'
 #' @description Sorts and renames haplotypes by the number of mutations with respect to the

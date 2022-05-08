@@ -7,7 +7,7 @@
 PoolQCbyRead(flashfiles, samples, primers)
 }
 \arguments{
-\item{flashfiles}{Vector including the names of FLASH processed files, with fastq extension.}
+\item{flashfiles}{Vector including the paths of FLASH processed files, with fastq extension.}
 
 \item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
@@ -25,21 +25,15 @@ After execution, 3 pdf files will be saved in the reports folder; the first 2 in
 This function evaluates fastq files after the execution of FLASH program to extend
   paired-end reads, and returns QC by read plots in pdf format.
 }
-\details{
-PoolQCbyRead
-}
-\note{
-Files indicated in \code{flashfiles} must be located in a folder named flashDir.
-  Also, a reports folder must be created in the project environment, whose path will be
-  named as repDir.
-}
 \examples{
 flashDir <- "./flash"
 repDir <- "./reports"
-flashfiles <- list.files(flashDir)
+# Save the file names with complete path
+flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+# Get data
 samples <- read.table("./data/samples.csv", sep="\t", header=T,
                      colClasses="character",stringsAsFactors=F)
-primers <- read.table("./data/mids.csv", sep="\t", header=T,
+primers <- read.table("./data/primers.csv", sep="\t", header=T,
                       stringsAsFactors=F)
 PoolQCbyRead(flashfiles,samples,primers)
 }

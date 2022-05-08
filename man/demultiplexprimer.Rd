@@ -15,7 +15,7 @@ demultiplexPrimer(
 )
 }
 \arguments{
-\item{splitfiles}{Vector including the names of demultiplexed files by MID, with fna extension.}
+\item{splitfiles}{Vector including the paths of demultiplexed files by MID, with fna extension.}
 
 \item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
@@ -36,18 +36,19 @@ A list containing the following:
     including their associated strand, mean read length, total reads and total haplotypes obtained.}
   \item{poolTable}{A table with the number of total trimmed reads and the yield of the process by pool.}
 
-  After execution, a FASTA file for each combination of strand, MID and pool will be saved in the trim folder,
-  including its associated reads. Additionaly, some report files will be generated:
+  After execution, a FASTA file for each combination of strand, MID and pool will be saved in a newly
+  created trim folder, including its associated reads.
+  Additionaly, some report files will be generated in a reports folder:
   \enumerate{
-  \item \code{AmpliconLengthsRprt.txt}: Includes the amplicon lengths of both strands
-    for each sample (with their corresponding MID identifier).
-  \item \code{AmpliconLengthsPlot.pdf}: Includes a barplot for each sample representing the amplicon
-    lengths of both strands.
-  \item \code{SplitByPrimersOnFlash.txt}: Includes a table of reads identified by primer, total reads identified by patient
-    and the yield by pool.
-  \item \code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: Includes some plots representing primer matches
-    by patient (in nº of reads) and the coverage of forward/reverse matches by pool.
-  \item \code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}
+  \item{\code{AmpliconLengthsRprt.txt}: Includes the amplicon lengths of both strands
+    for each sample (with their corresponding MID identifier).}
+  \item{\code{AmpliconLengthsPlot.pdf}: Includes a barplot for each sample representing the amplicon
+    lengths of both strands.}
+  \item{\code{SplitByPrimersOnFlash.txt}: Includes a table of reads identified by primer, total reads identified by patient
+    and the yield by pool.}
+  \item{\code{SplitByPrimersOnFlash.pdf,SplitByPrimersOnFlash-hz.pdf}: Includes some plots representing primer matches
+    by patient (in nº of reads) and the coverage of forward/reverse matches by pool.}
+  \item{\code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}}
 }
 \description{
 Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.
@@ -55,21 +56,14 @@ It is important to note that MID and primer sequences will be trimmed from reads
   but amplicon length is not predetermined.
 }
 \details{
-demultiplexPrimer
-
 After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, primer sequences are identified
   in both strands. First, forward strands are recognized by searching FW primer sequence in 5' end and the
   reverse complement of RV primer sequence in 3' end. Then, reverse strands are recognized by searching RV
   primer sequence in 5' end and FW primer sequence in 3' end, obtaining the reverse complement of all reads
   identified as reverse strands. So, both strands are obtained in a way that facilitates their intersection.
 }
-\note{
-Files indicated in \code{splitfiles} must be located in a directory named splitDir, and
-  a directory for resulting FASTA files with trimmed reads must be named as trimDir.
-  Also, a reports folder must be created in the project environment, whose path will be
-  named as repDir.
-}
 \examples{
+# Set parameters
 prmm <- 3
 min.len <- 180
 # The expected window for primer sequences will depend on the presence of
@@ -77,7 +71,9 @@ min.len <- 180
 target.st <- 1
 target.end <- 100
 splitDir <- "./splits"
-splitfiles <- list.files(splitDir)
+# Save the file names with complete path
+splitfiles <- list.files(splitDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+# Get data
 samples <- read.table("./data/samples.csv", sep="\t", header=T,
                       colClasses="character",stringsAsFactors=F)
 mids <- read.table("./data/mids.csv", sep="\t", header=T,

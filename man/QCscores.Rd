@@ -19,26 +19,23 @@ Note that Arguments \code{byPos} and \code{byRead} are mutually exclusive.}
 \value{
 If argument \code{byPos=TRUE}, the function returns a list including
   the following parameters:
-  \enumerate {
-  \item \code{fvnq}: A matrix with Phred quality scores across each nucleotide base in the reads.
-    Columns indicate base position and rows indicate 0.05, 0.25, 0.5, 0.75 and 0.95 Phred quantiles.
-  \item \code{fvnl}: A vector with normalized read lengths for each Phred quantile.
-  \item \code{all.ln}: A vector with all read lengths.}
+  \enumerate{
+  \item{\code{fvnq}: A matrix with Phred quality scores across each nucleotide base in the reads.
+    Columns indicate base position and rows indicate 0.05, 0.25, 0.5, 0.75 and 0.95 Phred quantiles.}
+  \item{\code{fvnl}: A vector with normalized read lengths for each Phred quantile.}
+  \item{\code{all.ln}: A vector with all read lengths.}}
 
 If argument \code{byRead=TRUE}, the function returns a list including
   the following parameters:
-  \enumerate {
-  \item \code{all.ln}: A vector with all read lengths.
-  \item \code{all.ln30}: A vector with the number of bases below Q30 for each read.
-  \item \code{all.fnl30}: The result of dividing all.ln30/all.ln, which is the
-    fraction of bases below Q30 for each read.}
+  \enumerate{
+  \item{\code{all.ln}: A vector with all read lengths.}
+  \item{\code{all.ln30}: A vector with the number of bases below Q30 for each read.}
+  \item{\code{all.fnl30}: The result of dividing all.ln30/all.ln, which is the
+    fraction of bases below Q30 for each read.}}
 }
 \description{
 Applies \code{\link{FastqStreamer}} over a fastq file and returns quality
   control mesures (Phred scores), either by position or by read.
-}
-\details{
-QCscores
 }
 \note{
 This function is only defined for correct execution of \code{\link{PoolQCbyPos}} and \code{\link{PoolQCbyRead}}

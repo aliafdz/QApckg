@@ -9,7 +9,7 @@ FiltbyQ30(max.pct = 0.05, flashfiles, flashres)
 \arguments{
 \item{max.pct}{The maximum percentage of bases below Q30 allowed in reads (by default,5\%).}
 
-\item{flashfiles}{Vector including the names of files that are going to be processed,
+\item{flashfiles}{Vector including the paths of files that are going to be processed,
 with fastq extension.}
 
 \item{flashres}{Table of results obtained after the execution of \code{\link{R1R2toFLASH}}
@@ -19,12 +19,13 @@ function.}
 A \code{\link{data.frame}} object containing FLASH and Filtering results.
 
 After the execution, a fastq file with remaining reads for each pool will be saved in
-  the flashFilt folder. Additionaly, two report files will be generated:
+  a new flashFilt folder (if it is not previously created). Additionaly, two report files will be
+  generated in a reports folder:
   \enumerate{
-  \item \code{FiltQ30.barplot.pdf}: Includes a first Bar plot representing raw reads,
+  \item{\code{FiltQ30.barplot.pdf}: Includes a first Bar plot representing raw reads,
     extended reads by FLASH and filtered reads, and a second Bar plot with
-    the yield by process for each pool.
-  \item \code{FiltQ30_report.txt}: Includes the same data returned by the function.
+    the yield by process for each pool.}
+  \item{\code{FiltQ30_report.txt}: Includes the same data returned by the function.}
 }
   The results table obtained includes two new columns with respect to FLASH results
     table, named FiltQ30 (number of filtered reads) and Raw (total sequencing reads).
@@ -35,24 +36,16 @@ This function applies \code{\link{FastqStreamer}} over a fastq file and removes
   in a new fastq file.
 }
 \details{
-FiltbyQ30
-
 This function is designed to be applied after \code{\link{R1R2toFLASH}} function from
   the same package. If \code{flashres} is not specified but FLASH extension was previously
   done, the function will try to load the FLASH results table from the reports folder.
 }
-\note{
-Files indicated in \code{flashfiles} must be located in a folder named flashDir.
-  Also, flashFilt and reports folders must be created in the project environment, whose paths will be
-  named as flashFiltDir and repDir respectively.
-}
 \examples{
 runDir <- "./run"
-runfiles <- list.files(runDir)
-flash <- "C:/FLASH/flash.exe"
+runfiles <- list.files(runDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+flash <- "./FLASH/flash.exe"
 flashDir <- "./flash"
-repDir <- "./reports"
-flashfiles <- list.files(flashDir)
+flashfiles <- list.files(flashDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 flashres <- R1R2toFLASH(runfiles,flash)
 filtres <- FiltbyQ30(max.pct=0.05,flashfiles,flashres)
 }

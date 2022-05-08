@@ -1,5 +1,3 @@
-#' primermatch
-#'
 #' @title Identfication of primer specific sequences
 #'
 #' @description Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
@@ -21,16 +19,19 @@
 #' @author Alicia Aranda
 
 primermatch <- function(j,idx,flnms,pool){
+  # Guarda la ruta completa de l'arxiu avaluat buscant-lo en el total
+  # d'arxius avaluats
+  flnms <- splitfiles[grep(flnms[j],splitfiles)]
 
   # Guarda l'index de la mostra avaluada
   jj <- idx[j]
 
   ### Carrega el fitxer fastq de la carpeta split corresponent al MID de la mostra avaluada
   # Si el fitxer no es troba al directori indicat, executa la següent iteració
-  if(!file.exists(file.path(splitDir,flnms[j]))) stop(paste('File',flnms[j],'not found.'))
+  if(!file.exists(flnms)) stop(paste('File',flnms,'not found.'))
 
   # Llegeix el fitxer .fna del MID de la mostra avaluada
-  seqs <- readDNAStringSet(file.path(splitDir,flnms[j]))
+  seqs <- readDNAStringSet(flnms)
 
   ### Per guardar el nº total de reads abans de demultiplexar per primers:
   totalseqs <- length(seqs)

@@ -1,5 +1,3 @@
-#' demultiplexMID
-#'
 #' @title Split reads by MID sequence
 #'
 #' @description Demultiplex reads by identifying MID sequences within windows of expected positions in the sequenced reads.
@@ -7,14 +5,10 @@
 #'   or origins.
 #'
 #' @description It is important to note that MID sequences will be not trimmed from reads, they are only identified for
-#'   association with each sample.
+#'   associate them with each sample.
 #'
-#' @note Files indicated in \code{flashffiles} must be located in a directory named flashFiltDir, and
-#'   a directory for resulting FASTA files with demultiplexed reads must be named as splitDir.
-#'   Also, a reports folder must be created in the project environment, whose path will be
-#'   named as repDir.
 #'
-#' @param flashffiles Vector including the names of FLASH filtered files, with fastq extension.
+#' @param flashffiles Vector including the paths of FLASH filtered files, with fastq extension.
 #' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param mids Data frame with the association between MID identifiers and their sequences.
@@ -26,28 +20,32 @@
 #'   \item{nreads}{A table with the number of reads
 #'     identified for each MID.}
 #'   \item{by.pools}{A table with the coverage of reads demultiplexed by pool.}
-#'   After execution, a FASTA file for each combination of MID and pool will be saved in the splits folder,
-#'   including its associated reads. Additionaly, two report files will be generated:
+#'
+#' @return After execution, a FASTA file for each combination of MID and pool will be saved in a splits folder
+#'   (that will be created in working directory), including its associated reads.
+#'   Additionaly, two report files will be generated in a reports folder:
 #'   \enumerate{
-#'   \item \code{SplidByMIDs.barplots.pdf}: Includes a first barplot representing \code{nreads} data values,
-#'     and a second plot with the \code{by.pools} data values.
-#'   \item \code{SplidByMIDs.Rprt.txt}: Includes the same data tables returned by the function.}
+#'   \item{\code{SplidByMIDs.barplots.pdf}: Includes a first barplot representing \code{nreads} data values,
+#'     and a second plot with the \code{by.pools} data values.}
+#'   \item{\code{SplidByMIDs.Rprt.txt}: Includes the same data tables returned by the function.}}
 #'
 #'
 #' @import ShortRead
+#' @import Biostrings
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom parallel mclapply
+#' @import parallel
 #' @seealso \code{\link{FiltbyQ30}}
 #' @export
 #' @examples
-#' repDir <- "./reports"
-#' splitDir <- "./splits"
 #' flashFiltDir <- "./flashFilt"
-#' flashffiles <- list.files(flashFiltDir)
+#' # Save the file names with complete path
+#' flashffiles <- list.files(flashFiltDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
+#' # Get data
 #' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                       colClasses="character",stringsAsFactors=F)
 #' mids <- read.table("./data/mids.csv", sep="\t", header=T,
 #'                    stringsAsFactors=F)
+#' # Set parameters
 #' maxdif <- 1
 #' mid.start <- 1
 #' mid.end <- 40
@@ -67,11 +65,27 @@ demultiplexMID <- function(flashffiles,samples,mids,maxdif=1,mid.start=1,mid.end
     }
   }
 
+  # Si cap dels fitxers indicats a la carpeta flashFilt no existeix, atura l'execució i
+  # mostra un missatge d'error
+  if(any(!file.exists(flashffiles))){
+    stop(paste(flashffiles[!file.exists(flashffiles)],"does not exist.\n"))
+  }
+
   # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
   # i mostra un missatge d'error
   if(length(samples)==0|length(mids)==0) {
     stop("Please check data folder files, something is missing.\n")
   }
+
+  # Si no existeixen les carpetes on es guarden els fitxers resultants de la funció,
+  # es generen automàticament a la carpeta de treball
+  if(!dir.exists("./splits")) {
+    dir.create("./splits")}
+  splitDir <- "./splits"
+
+  if(!dir.exists("./reports")) {
+    dir.create("./reports")}
+  repDir <- "./reports"
 
   # Guarda la columna Pools (regions 5' o preS1). 'unique' per eliminar elements duplicats (només hi haurà 2)
   pools <- unique(samples$Pool.Nm)
@@ -102,7 +116,7 @@ if(class(idxs)[1]=='matrix') {colnames(idxs)<-pools} else names(idxs)<-pools
 mid.sets <- tapply(idxs,samples$Pool.Nm,function(x) unique(samples$MID[x]))
 
 flashfdata <- sapply(c(1:length(pools)),function(i)
-  FastqStreamer(file.path(flashFiltDir,flashffiles[i])))
+  FastqStreamer(flashffiles[i]))
 
 ###  Loop sobre pools en samples
 for(i in 1:length(pools)) {
