@@ -17,7 +17,22 @@ and \code{poolTable} data frames.}
 \item{min.seq.len}{Threshold to filter haplotypes at minimum length before intersection.}
 }
 \value{
+The function returns a \code{\link{data.frame}} object containing the intersection results
+  for each combination of patient and pool, including the initial number of reads, filtered out reads
+  (for being below a given frequency threshold or unique to a single strand), overlapping frequency
+  between both strands and the common reads (in percentage and nº of reads).
 
+After execution, two FASTA files for each combination of sample and pool will be saved in a newly
+  generated MACH folder; the first includes multiple alignment between forward and reverse strand haplotypes,
+  and the second includes the forward and reverse strands intersected.
+  Additionaly, some report files will be generated in the reports folder:
+  \enumerate{
+  \item{\code{MA.Intersects-SummRprt.txt}: Includes the sumary results by reads number after abundance filter and
+    strand intersection.}
+  \item{\code{MA.Intersects.plots.pdf}: Includes different barplots for each sample representing the frequency of
+    forward, reverse and intersected strand haplotypes.}
+  \item{\code{IntersectBarplots.pdf}: Includes different barplots for all combinations of patient and pool,
+    representing the number of intersected and filtered out reads, the intersection yield and global yield.}}
 }
 \description{
 Computes the intersection of forward and reverse strand haplotypes and generates some report files.
@@ -28,6 +43,9 @@ This function is designed to be used after the execution of \code{\link{demultip
   for the evaluated samples, \code{\link{ConsHaplotypes}} executes multiple alignment with \code{\link{muscle}} and
   returns the consensus haplotypes using \code{\link{IntersectStrandHpls}}, that will be saved using
   the helper function \code{\link{SaveHaplotypes}}.
+}
+\note{
+A new file named \code{muscle.log} containing \code{\link{muscle}} options will be generated and saved in a folder named "tmp".
 }
 \examples{
 splitDir <- "./splits"
@@ -45,7 +63,6 @@ trimDir <- "./trim"
 trimfiles <- list.files(trimDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 # Define necessary parameters
 min.seq.len <- 150
-min.rd <-   1
 thr <- 0.2
 int.res <- ConsHaplotypes(trimfiles, pm.res, thr, min.seq.len)
 

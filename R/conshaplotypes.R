@@ -20,7 +20,7 @@
 #'   (for being below a given frequency threshold or unique to a single strand), overlapping frequency
 #'   between both strands and the common reads (in percentage and nº of reads).
 #'
-#'   After execution, two FASTA files for each combination of sample and pool will be saved in a newly
+#' @return After execution, two FASTA files for each combination of sample and pool will be saved in a newly
 #'   generated MACH folder; the first includes multiple alignment between forward and reverse strand haplotypes,
 #'   and the second includes the forward and reverse strands intersected.
 #'   Additionaly, some report files will be generated in the reports folder:
@@ -29,9 +29,10 @@
 #'     strand intersection.}
 #'   \item{\code{MA.Intersects.plots.pdf}: Includes different barplots for each sample representing the frequency of
 #'     forward, reverse and intersected strand haplotypes.}
-#'   \item \code{IntersectBarplots.pdf}: Includes different barplots for all combinations of patient and pool,
+#'   \item{\code{IntersectBarplots.pdf}: Includes different barplots for all combinations of patient and pool,
 #'     representing the number of intersected and filtered out reads, the intersection yield and global yield.}}
 #'
+#' @note A new file named \code{muscle.log} containing \code{\link{muscle}} options will be generated and saved in a folder named "tmp".
 #'
 #' @import Biostrings
 #' @import ape
@@ -58,7 +59,6 @@
 #' trimfiles <- list.files(trimDir,recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
 #' # Define necessary parameters
 #' min.seq.len <- 150
-#' min.rd <-   1
 #' thr <- 0.2
 #' int.res <- ConsHaplotypes(trimfiles, pm.res, thr, min.seq.len)
 #'
@@ -77,7 +77,7 @@ ConsHaplotypes <- function(trimfiles,pm.res,thr=0.2, min.seq.len=150){
   }
 
   # Si la taula pm.res no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(pm.res)|!exists(pm.res)==0|length(pm.res==0)) {
+  if(missing(pm.res)|!exists(pm.res)|length(pm.res==0)) {
     stop("The list obtained by demultiplexPrimer function is needed.\n")
   }
   if(!is.list(pm.res)){
@@ -100,6 +100,9 @@ ConsHaplotypes <- function(trimfiles,pm.res,thr=0.2, min.seq.len=150){
   if(!dir.exists("./reports")) {
     dir.create("./reports")}
   repDir <- "./reports"
+
+  if(!dir.exists("./tmp")) {
+    dir.create("./tmp")}
 
 
   # En lloc de carregar el RData es carreguen les taules fileTable i poolTable de la variable de la funció anterior.
@@ -158,7 +161,7 @@ pdf(file.path(repDir,"MA.Intersects.plots.pdf"),paper="a4",
 par(mfrow=c(3,1))
 
 # Bucle amb paralelització per iterar sobre totes les mostres (2 per pacient)
-mclapply(n, function(i){
+mclapply(c(1:n), function(i){
 
   # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
   # seves freqüències a partir d'un fitxer FASTA indicat.
@@ -229,7 +232,7 @@ mclapply(n, function(i){
 
   ###  Aliniament múltiple per muscle dels haplotips fw i rv
   # Guarda el resultat de l'aliniament múltiple realitzat amb la funció 'muscle()'
-  ma <- DNAStringSet(muscle::muscle(aseqs,log = file.path(tempDir,"muscle.log"), verbose= TRUE,quiet=TRUE))
+  ma <- DNAStringSet(muscle::muscle(aseqs,log = "./tmp/muscle.log", verbose= TRUE,quiet=TRUE))
   # Genera el fitxer resultant de l'aliniament múltiple al directori MACH per guardar l'aliniament
   # dels haplotips de la mostra avaluada
   writeXStringSet(ma,ma.flnms[i])
