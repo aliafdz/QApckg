@@ -45,7 +45,7 @@ FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
   # La taula resulta d'aplicar la funció R1R2toFLASH
   # Si no existeix la variable o no s'ha incorporat, llegeix la taula del fitxer
   # .txt que podria estar guardat a la carpeta de reports
-  if(!exists('flashres')|missing(flashres)){
+  if(!exists(flashres)|missing(flashres)|length(flashres)==0){
     tryCatch(
       expr = {
         flashres <- read.table("./reports/FLASH_report.txt",skip=8)},

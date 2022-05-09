@@ -80,7 +80,7 @@ demultiplexPrimer <- function(splitfiles,samples,primers,prmm=3,min.len=180,targ
 
   # Si la ruta on es troben els fitxers data no està ben especificada, atura l'execució
   # i mostra un missatge d'error
-  if(length(samples)==0||length(primers)==0) {
+  if(length(samples)==0|length(primers)==0) {
     stop("Please check data folder files, something is missing.\n")
   }
 
