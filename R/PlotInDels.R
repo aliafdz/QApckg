@@ -34,60 +34,10 @@
 #' machfiles <- list.files(mach.Dir,recursive=TRUE, full.names=TRUE, include.dirs=TRUE)
 #' PlotInDels(machfiles,pm.res)
 
-### Funció per llegir les seqüències aliniades dels amplicons
-# Els arguments corresponen al nom del fitxer on es troben les seqs i el valor
-# de mínim nº de reads assignat (per defecte 2)
-read.ampl.seqs <- function(flnm,mnr=2) # flnm=flnms[i],mnr=1
-{ # Llegeix el fitxer fasta de l'argument i el transforma en un objecte DNAStringSet
-  seqs <- as.character(readDNAStringSet(flnm))
-  # Guarda els noms de les seqüències del fitxer, és a dir dels haplotips
-  # Aquests haplotips són els que han fet intersecció entre ambdues cadenes
-  IDstr <- names(seqs)
-  # Guarda el total de seqs del fitxer (nº d'haplotips coincidents)
-  n <- length(IDstr)
-
-  # Variable de caràcter buida amb tantes entrades com haplotips trobi al fitxer
-  nms <- character(length=n)
-  # Matriu buida amb tantes files com haplotips i 2 columnes, definides amb 'colnames()'
-  sts <- matrix(0,nrow=n,ncol=2)
-  colnames(sts) <- c("nseqs","pct1") # nº de seqüències i percentatge
-  # Bucle sobre els haplotips del fitxer (coincidents)
-  for(j in 1:n)
-  { # Separa el nom de l'haplotip avaluat segons el símbol "|"
-    strs <- strsplit(IDstr[j],split="\\|")[[1]]
-    # Guarda a la variable buida d'abans el primer element del nom separat,
-    # que correspon a la consecució de "Hpl", el nº de mutacions amb la seq màster
-    # i el nº d'ordre dins del grup amb les mateixes mutacions
-    nms[j] <- strs[1]
-    # Guarda a la matriu buida els dos elements restants del nom de l'haplotip,
-    # que corresponen al nº de reads i la freqüència relativa de l'haplotip
-    sts[j,] <- as.numeric(strs[2:3])
-  }
-  # Agrupa els resultats del bucle for en un data frame de 3 columnes i tantes files
-  # com haplotips avaluats d'aquella mostra
-  IDs <- data.frame(ID=nms,sts,stringsAsFactors=FALSE)
-  # Guarda el nº de files del data frame (nº haplotips coincidents)
-  nall <- nrow(IDs)
-  # Guarda el 'Total Number of Reads': sumatori del nº de reads de tots els haplotips
-  tnr <- sum(IDs$nseqs)
-
-  ### Filtra segons el nombre mínim de reads (mnr) per haplotip
-  # Indica quines entrades del data frame generat tenen més reads del mínim permès
-  flags <- IDs$nseqs >= mnr
-  # Retorna una llista amb:
-  # 1) La taula de resultats (ID haplotip, nº de reads i freq) filtrada per mnr
-  # 2) Les seqüències dels haplotips filtrats per mnr
-  # 3) El nº total d'haplotips coincidents del fitxer fasta
-  # 4) El nº total de reads (sumatori de tots els haplotips)
-  return(list(IDs=IDs[flags,],seqs=seqs[flags],nall=nall,tnr=tnr))
-}
-
-####-------------------------------------------------------------####
-
 PlotInDels <- function(machfiles,pm.res){
 
   # Si la taula pm.res no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(pm.res)|!exists(pm.res)|length(pm.res==0)) {
+  if(missing(pm.res)|!exists('pm.res')|length(pm.res)==0) {
     stop("The list obtained by demultiplexPrimer function is needed.\n")
   }
   if(!is.list(pm.res)){
@@ -120,7 +70,7 @@ PlotInDels <- function(machfiles,pm.res){
   repDir <- "./reports"
 
 # En aquest cas només fa falta la taula FlTbl del demultiplexat per primers
-FlTbl <- pm.res$FlTbl
+FlTbl <- pm.res$fileTable
 
 # Retorna els indexs de la taula FlTbl derivats d'ordenar les mostres en funció de l'ID del
 # pacient, de l'amplicó (regió) avaluat i la cadena forward o reverse
@@ -134,14 +84,12 @@ FlTbl <- FlTbl[o,]
 # Guarda els indexs de la taula FlTbl segons la cadena asignada als reads
 idx.fw <- which(FlTbl$Str=="fw")
 idx.rv <- which(FlTbl$Str=="rv")
-idx.fw<-grep("PrFW",trimfiles)
-idx.rv<-grep("PrRV",trimfiles)
 
 # Guarda els noms dels fitxers fasta inclosos a la carpeta MACH generats després
 # de fer la intersecció entre cadenes (MACHpl02).
 flnms <- paste("MACHpl02",FlTbl$Pat.ID[idx.fw],
                FlTbl$Ampl.Nm[idx.fw],"fna",sep=".")
-flnms == machfiles
+flnms <- machfiles
 
 # Guarda les concatenacions dels ID dels pacients amb la regió amplificada units per guionet
 pnms <- paste(FlTbl$Pat.ID[idx.fw],FlTbl$Ampl.Nm[idx.fw],sep=" - ")
@@ -154,26 +102,20 @@ par(mfrow=c(4,1))
 par(mar=c(4.5, 4, 3, 4) + 0.1)
 
 ## Bucle sobre totes les mostres (2 per pacient), que coincideix amb el nº de fitxers MACHpl02
-mclapply(c(1:length(flnms)), function(i){
-  # Si el fitxer de la mostra avaluada no existeix, passa a la següent iteració
-  if(!file.exists(flnms[i])) i<-i+1
-  ## Aplica la funció definida (del fitxer, però es pot copiar aquí) per llegir
-  # els fitxers fasta de cada mostra avaluada
-  lst <- read.ampl.seqs(flnms[i],mnr=1) ## Funció de l'arxiu seqanalfns.v4.5.R
+foreach(i=1:length(flnms)) %do% {
+  ## Aplica la funció del paquet QSutils per llegir el fitxer fasta de la mostra avaluada
+  lst <- ReadAmplSeqs(flnms[i])
+  # Guarda totes les seqüències dels haplotips del fitxer avaluat
+  seqs <- as.character(lst$hseqs)
+  # Guarda la llista amb el nº de reads de tots els haplotips
+  nr <- lst$nr
+
   # Guarda l'index de l'haplotip amb màxim nº de reads
-  imast <- which.max(lst$IDs$nseqs)
+  imast <- which.max(nr)
   # Guarda la seqüència de l'haplotip amb màxim nº de reads (màster)
-  rsq <- lst$seqs[imast]
+  rsq <- seqs[imast]
   # Guarda la longitud de la seq de l'haplotip màster
   xmx <- nchar(rsq)
-  # Guarda totes les seqüències dels haplotips del fitxer avaluat
-  seqs <- lst$seqs
-  # Guarda la llista amb el nº de reads de tots els haplotips
-  nr <- lst$IDs$nseqs
-
-  lst1 <- ReadAmplSeqs(DNAStringSet(flnms[i]))
-  lst1$nr
-  lst1$hseqs
 
   ## Separa la seqüència de l'haplotip màster per nucleòtids
   rnt <- strsplit(rsq,split="")[[1]]
@@ -227,7 +169,7 @@ mclapply(c(1:length(flnms)), function(i){
   mtext("Percentage",side=4,line=3,cex=0.6)
   # El títol de cada gràfic correspon a l'ID del pacient i la regió amplificada
   title(main=pnms[i],line=1)
-}, mc.cores = detectCores()*0.75)
+}
 
 dev.off()
 

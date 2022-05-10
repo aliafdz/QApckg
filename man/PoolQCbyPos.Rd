@@ -2,11 +2,7 @@
 % Please edit documentation in R/PoolQCbyPos.R
 \name{PoolQCbyPos}
 \alias{PoolQCbyPos}
-\title{Evaluate QC by position
-
-This function evaluates fastq files before and after the execution of FLASH program to extend
-  paired-end reads, and returns QC by position plots in pdf format.
-It can be applied also after filtering FLASH fastq files by Phred Score.}
+\title{Evaluate QC by position}
 \usage{
 PoolQCbyPos(flashfiles, samples, primers, runfiles)
 }
@@ -29,10 +25,9 @@ After execution, a pdf file for each pool used in the experiment will be saved i
   and a message indicating that the files are generated will appear in console.
 }
 \description{
-Evaluate QC by position
-
 This function evaluates fastq files before and after the execution of FLASH program to extend
   paired-end reads, and returns QC by position plots in pdf format.
+
 It can be applied also after filtering FLASH fastq files by Phred Score.
 }
 \examples{

@@ -119,7 +119,7 @@ flashfdata <- sapply(c(1:length(pools)),function(i)
   FastqStreamer(flashffiles[i]))
 
 ###  Loop sobre pools en samples
-for(i in 1:length(pools)) {
+for(i in 1:length(pools)){
 
   ###  Identificar fastq del pool
   # Busca dins dels arxius de la carpeta flashDir el fitxer per cada pool (regió VHB).
@@ -144,7 +144,7 @@ for(i in 1:length(pools)) {
   seqs <- seqs[ width(seqs) > 150 ]
 
   ###  Loop sobre els MIDs del pool avaluat
-  mclapply(mid.sets[[i]],function(j){
+  foreach(j=mid.sets[[i]]) %do% {
     # Guarda en una variable la seq inclosa en les posicions indicades.
     # En aquest cas, es busca el MID entre les posicions 1-40 (start-end), definides
     # a l'arxiu de paràmetres.
@@ -171,7 +171,7 @@ for(i in 1:length(pools)) {
                       append=app.flag)
       # Actualitza les seqs dels reads que no han fet match en aquesta iteració
       seqs <- seqs[!flags]}
-  },mc.cores= detectCores()*0.75)
+  }
 
   by.pools$TotReads[i] <- reads # Sumatori dels reads obtinguts en el pool avaluat
 

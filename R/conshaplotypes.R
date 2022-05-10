@@ -77,7 +77,7 @@ ConsHaplotypes <- function(trimfiles,pm.res,thr=0.2, min.seq.len=150){
   }
 
   # Si la taula pm.res no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(pm.res)|!exists(pm.res)|length(pm.res==0)) {
+  if(missing(pm.res)|!exists('pm.res')|length(pm.res)==0) {
     stop("The list obtained by demultiplexPrimer function is needed.\n")
   }
   if(!is.list(pm.res)){
@@ -160,8 +160,8 @@ pdf(file.path(repDir,"MA.Intersects.plots.pdf"),paper="a4",
     width=7,height=11)
 par(mfrow=c(3,1))
 
-# Bucle amb paralelització per iterar sobre totes les mostres (2 per pacient)
-mclapply(c(1:n), function(i){
+# Bucle per iterar sobre totes les mostres (2 per pacient)
+foreach(i=c(1:n)) %do% {
 
   # Aplica la funció 'ReadAmplSeqs()' del paquet QSutils que permet obtenir els haplotips i les
   # seves freqüències a partir d'un fitxer FASTA indicat.
@@ -306,11 +306,8 @@ mclapply(c(1:n), function(i){
   # Sumatori del nº de reads totals dels haplotips coincidents d'ambdues cadenes: reads finals
   rdf.gbl$Fn.rd[i]  <- lstI$nr
 
-  ### Si no es detecta superposició entre els haplotips d'ambdues cadenes, salta a la seqüent iteració
-  if(length(nr)==0)
-  { cat("\n--------------------------------------------------\n")
-    i<-i+1
-  }
+  ### Només guarda els resultats pertinents si detecta intersecció entre les cadenes
+  if(length(nr)!=0) {
 
   ### Gràfic de barres dels haplotips alineats
   # Concatenació de l'ID del pacient i la regió avaluada en la iteració
@@ -348,9 +345,16 @@ mclapply(c(1:n), function(i){
 
   ### Aplica la funció local del principi per guardar els haplotips coincidents en ambdues cadenes
   # amb les seves freqüències en els fitxers MACHpl02
-  SaveHaplotypes(out.flnms[i],as.character(hseqs),nr=(lstI$pFW[fl]+lstI$pRV[fl]))
-}, # Fi del loop sobre totes les mostres (2 per pacient)
-mc.cores = detectCores()*0.75)
+  s<-SaveHaplotypes(out.flnms[i],as.character(hseqs),nr=(lstI$pFW[fl]+lstI$pRV[fl]))
+
+  }
+
+  ### Si no es detecta superposició entre els haplotips d'ambdues cadenes, salta a la seqüent iteració
+  else if(length(nr)==0) {
+    cat("\n--------------------------------------------------\n")}
+
+} # Fi del loop sobre totes les mostres (2 per pacient)
+
 dev.off()
 
 # Genera el fitxer .txt de resultats de les interseccions
@@ -470,6 +474,8 @@ barplot(frdf$common,col="lavender",ylim=c(0,100),names.arg=mbp.nms,
         las=2,cex.names=0.6,cex.axis=0.8)
 title(main="FW + RV intersection yield",line=1)
 
+# Fa coerció de la columna reads per tal de poder fer el sumatori més endavant
+FlTbl$Reads <- as.numeric(FlTbl$Reads)
 ## Guarda els noms concatenants l'ID dels pacients i la regió amplificada separats per punt
 all.nms <- paste(FlTbl$Pat.ID,FlTbl$Ampl.Nm,sep=".")
 # Realitza el sumatori dels reads FW i RV de cadascuna de les mostres

@@ -314,6 +314,6 @@ dev.off()
 
 # Borra les taules guardades a l'entorn global per evitar que augmenti la memòria d'execució, ja que estan
 # guardades a la variable results.
-rm(FlTbl,PoolTbl,pr.res,envir = globalenv())
+rm(FlTbl,PoolTbl,pr.res,envir = environment())
 return(result)
 }

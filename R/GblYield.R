@@ -65,12 +65,12 @@
 GblYield <- function(samples,filtres,pm.res,int.res){
 
   # Si la taula samples no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(samples)|length(samples==0)) {
+  if(missing(samples)|length(samples)==0) {
     stop("Samples file not found.\n")
   }
 
   # Si la taula filtres no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(filtres)|!exists(filtres)|length(filtres==0)) {
+  if(missing(filtres)|!exists('filtres')|length(filtres)==0) {
     stop("The data frame obtained by R1R2toFLASH function is needed.\n")
   }
   if(!is.data.frame(filtres)){
@@ -78,7 +78,7 @@ GblYield <- function(samples,filtres,pm.res,int.res){
   }
 
   # Si la taula pm.res no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(pm.res)|!exists(pm.res)|length(pm.res==0)) {
+  if(missing(pm.res)|!exists('pm.res')|length(pm.res)==0) {
     stop("The list obtained by demultiplexPrimer function is needed.\n")
   }
   if(!is.list(pm.res)){
@@ -86,7 +86,7 @@ GblYield <- function(samples,filtres,pm.res,int.res){
   }
 
   # Si la taula int.res no s'ha inclòs o no existeix, retorna un missatge d'error
-  if(missing(int.res)|!exists(int.res)|length(int.res==0)) {
+  if(missing(int.res)|!exists('int.res')|length(int.res)==0) {
     stop("The data frame obtained by ConsHaplotypes function is needed.\n")
   }
   if(!is.data.frame(int.res)){

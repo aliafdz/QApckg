@@ -1,8 +1,8 @@
 #' @title Evaluate QC by position
 #'
-#' This function evaluates fastq files before and after the execution of FLASH program to extend
+#' @description This function evaluates fastq files before and after the execution of FLASH program to extend
 #'   paired-end reads, and returns QC by position plots in pdf format.
-#' It can be applied also after filtering FLASH fastq files by Phred Score.
+#' @description It can be applied also after filtering FLASH fastq files by Phred Score.
 #'
 #'
 #' @param runfiles Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
@@ -47,7 +47,7 @@ if(missing(runfiles)){
 # Si s'inclouen els arxius de run però la ruta on es troben no està ben especificada,
 # intenta buscar la ruta correcta a partir del directori de treball
 # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
-if(!missing(runfiles)&length(runfiles)==0) {
+if(!is.na(runfiles[1])&length(runfiles)==0) {
   runfiles <- list.files(paste(getwd(),"/run",sep=''),recursive=TRUE,full.names=TRUE,include.dirs=TRUE)
   if(length(runfiles)==0) {
     stop("Couldn't find any Raw Data files, please indicate correct path.\n")
@@ -55,9 +55,10 @@ if(!missing(runfiles)&length(runfiles)==0) {
 }
   # Si cap dels fitxers indicats a la carpeta run no existeix, atura l'execució i
   # mostra un missatge d'error
-  if(!missing(runfiles)&any(!file.exists(runfiles))){
+  if(!is.na(runfiles[1])){
+    if(any(!file.exists(runfiles))){
     stop(paste(runfiles[!file.exists(runfiles)],"does not exist.\n"))
-  }
+  }}
 
 # Si la ruta on es troben els fitxers flash no està ben especificada, intenta buscar la
 # ruta correcta a partir del directori de treball
