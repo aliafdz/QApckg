@@ -10,19 +10,22 @@ Description: This package provides a set of functions for NGS data processing,
   intersected haplotypes for each evaluated sample. With this consensus haplotypes 
   different kinds of computations can be made, i.e genotyping, variant calling and
   quasispecies diversity. 
-License: `use_proprietary_license()`
+License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
 biocViews:
+git_url: <https://github.com/aliafdz/QApckg>
 Imports:
-    methods
+    methods,
+    ape, 
+    stats
 Depends:
+    R (>= 4.1),
     ShortRead,
     RColorBrewer,
     Biostrings,
     stringr,
-    ape,
     foreach,
     doParallel,
     QSutils,
