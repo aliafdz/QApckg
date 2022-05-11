@@ -10,12 +10,14 @@
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
 #'   \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
 #'     and \code{Aa.lpos} columns.
+#' @param ncores Number of cores to use for parallelization with \code{\link{mclapply.hack}}.
+#'
 #' @importFrom foreach foreach
 #' @return After execution, 3 pdf files will be saved in the reports folder; the first 2 include
 #'   the QC by read plots for each pool used in the experiment, and the 3rd shows the read length
 #'   distribution for each pool. A message indicating that the files are generated will appear in console.
 #' @export
-#' @seealso \code{\link{R1R2toFLASH}},\code{\link{QCscores}}
+#' @seealso \code{\link{R1R2toFLASH}}, \code{\link{QCscores}}
 #' @examples
 #' flashDir <- "./flash"
 #' repDir <- "./reports"
@@ -31,7 +33,7 @@
 
 
 
-PoolQCbyRead <- function(flashfiles,samples,primers) {
+PoolQCbyRead <- function(flashfiles,samples,primers,ncores=1) {
 
   # Si la ruta on es troben els fitxers flash no està ben especificada, intenta buscar la
   # ruta correcta a partir del directori de treball
@@ -69,18 +71,18 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
     parts <- matrix(parts,nrow=1)
   colnames(parts) <- c("PatID","SmplID")
 
-  ### Amb 'sapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
+  ### Amb 'mclapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
   # de la carpeta flash per calcular les puntuacions per read (argument byRead)
-  flashdata <- sapply(c(1:length(snms)),function(i){
-    QCscores(flashfiles[i],byRead=T)})
-  colnames(flashdata) <- flnms
+  flashdata <-mclapply.hack(c(1:length(snms)),function(i){
+    QCscores(flashfiles[i],byRead=T)},mc.cores=ncores)
+  names(flashdata) <- flnms
 
 ######## POOLQCBYREAD
 
   ### Loop sobre pools
   foreach(i=1:length(snms)) %do% {
     # Guarda els resultats de la funció 'QCscores()' sobre FLASH que corresponen al pool avaluat
-    lst1 <- flashdata[,i]
+    lst1 <- flashdata[[i]]
 
     # Genera el pdf on aniran els gràfics
     pdf.flnm <- paste("PoolQCbyRead_",parts[i,"PatID"],".pdf",sep="")
@@ -153,7 +155,7 @@ PoolQCbyRead <- function(flashfiles,samples,primers) {
   foreach(i=1:length(snms)) %do% {
 
     # Guarda els resultats de la funció 'QCscores()' sobre FLASH que corresponen al pool avaluat
-    lst1 <- flashdata[,i]
+    lst1 <- flashdata[[i]]
 
     # Taula per indicar la freqüència de cada nº de cicles extrets en vln
     lnfrq <- table(lst1$all.ln)

@@ -13,6 +13,7 @@
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
 #'   \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
 #'     and \code{Aa.lpos} columns.
+#' @param ncores Number of cores to use for parallelization with \code{\link{mclapply.hack}}.
 #'
 #' @return After execution, a pdf file for each pool used in the experiment will be saved in a
 #'   reports folder (if it is not previously defined, the function will create this folder),
@@ -35,7 +36,7 @@
 #' @author Alicia Aranda
 
 
-PoolQCbyPos <- function(flashfiles,samples,primers,runfiles) {
+PoolQCbyPos <- function(flashfiles,samples,primers,runfiles,ncores=1) {
 
 # Si aquesta funció s'aplica sobre les dades filtrades per Q30, és a dir no
 # s'inclou l'argument runfiles, aquests es defineixen com NA
@@ -131,18 +132,18 @@ R2.flnms <- rfiles[which(grepl('R2',runfiles))]
 ### Sincronitza la longitud dels amplicons dels pools amb el nom d'aquests
 pln <- pln[parts[,"PatID"]]
 
-### Amb 'sapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
+### Amb 'mclapply()' per Windows aplica la funció 'QCscores()' del paquet sobre tots els fitxers
 # de la carpeta run per calcular les puntuacions per posició (argument byPos)
-rundata <- sapply(c(1:length(rfiles)),function(i){
-  QCscores(runfiles[i],byPos=T)})
+rundata <-mclapply.hack(c(1:length(rfiles)),function(i){
+  QCscores(runfiles[i],byPos=T)},mc.cores=ncores)
 # Assigna cada resultat al seu nom de fitxer corresponent
-colnames(rundata) <- rfiles
+names(rundata) <- rfiles
 
-### Amb 'sapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
+### Amb 'mclapply()' aplica la funció 'QCscores()' del paquet sobre tots els fitxers
 # de la carpeta flash per calcular les puntuacions per posició (argument byPos)
-flashdata <- sapply(c(1:length(snms)),function(i){
-  QCscores(flashfiles[i],ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
-colnames(flashdata) <- ffiles
+flashdata <-mclapply.hack(c(1:length(snms)),function(i){
+  QCscores(flashfiles[i],ln=pln[i],byPos=T)},mc.cores=ncores) # pln per guardar com argument ln la longitud de l'amplicó!
+names(flashdata) <- ffiles
 }
 else{ # Si no hi ha fitxers run perquè estem aplicant sobre FLASH filtrat per Q30
   ### Fitxers que resulten de Flash després de filtrar per Q30
@@ -151,9 +152,9 @@ else{ # Si no hi ha fitxers run perquè estem aplicant sobre FLASH filtrat per Q
   # Sincronitza la longitud dels amplicons dels pools amb el nom d'aquests
   pln <- pln[snms]
   # Aplica la funció QCscores per calcular la qualitat per posició i fer els gràfics corresponents
-  flashdata <- sapply(c(1:length(snms)),function(i){
-    QCscores(flashfiles[i],ln=pln[i],byPos=T)}) # pln per guardar com argument ln la longitud de l'amplicó!
-  colnames(flashdata) <- ffiles
+  flashdata <-mclapply.hack(c(1:length(snms)),function(i){
+    QCscores(flashfiles[i],ln=pln[i],byPos=T)},mc.cores=ncores) # pln per guardar com argument ln la longitud de l'amplicó!
+  names(flashdata) <- ffiles
 }
 
 ### Loop sobre pools
@@ -168,8 +169,8 @@ for(i in 1:length(snms))
   # Guarda els resultats de la funció 'QCscores()' que corresponen al pool avaluat
   # i diferenciant els fitxers R1 i R2
   # Això és pel gràfic d'abans de flash, avalua la qualitat dels reads inicials
-  lst1 <- rundata[,which(colnames(rundata) %in% R1.flnms[i])]
-  lst2 <- rundata[,which(colnames(rundata) %in% R2.flnms[i])]
+  lst1 <- rundata[[which(names(rundata) %in% R1.flnms[i])]]
+  lst2 <- rundata[[which(names(rundata) %in% R2.flnms[i])]]
 
   # Guarda la taula amb quantils de phred score per posició entre total de reads
   # per les dades de R1 i R2
@@ -180,7 +181,7 @@ for(i in 1:length(snms))
   QCplot(fvnm1,fvnm2,snms[i])
 
   # Guarda els resultats de la funció 'QCscores()' sobre FLASH que corresponen al pool avaluat
-  lst <- flashdata[,i]
+  lst <- flashdata[[i]]
 
   # Matriu amb quantils de phred score per posició entre total de reads per les dades FLASH
   fvnm <- lst$fvnq

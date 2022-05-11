@@ -4,7 +4,7 @@
 \alias{PoolQCbyPos}
 \title{Evaluate QC by position}
 \usage{
-PoolQCbyPos(flashfiles, samples, primers, runfiles)
+PoolQCbyPos(flashfiles, samples, primers, runfiles, ncores = 1)
 }
 \arguments{
 \item{flashfiles}{Vector including the paths of FLASH processed/filtered files, with fastq extension.}
@@ -18,6 +18,8 @@ PoolQCbyPos(flashfiles, samples, primers, runfiles)
 
 \item{runfiles}{Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
 If the function is applied for filtered fastq files, this argument must be NA or missing.}
+
+\item{ncores}{Number of cores to use for parallelization with \code{\link{mclapply.hack}}.}
 }
 \value{
 After execution, a pdf file for each pool used in the experiment will be saved in a

@@ -4,7 +4,7 @@
 \alias{PoolQCbyRead}
 \title{Evaluate QC by read}
 \usage{
-PoolQCbyRead(flashfiles, samples, primers)
+PoolQCbyRead(flashfiles, samples, primers, ncores = 1)
 }
 \arguments{
 \item{flashfiles}{Vector including the paths of FLASH processed files, with fastq extension.}
@@ -15,6 +15,8 @@ PoolQCbyRead(flashfiles, samples, primers)
 \item{primers}{Data frame with information about the \emph{primers} used in the experiment, including
 \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
   and \code{Aa.lpos} columns.}
+
+\item{ncores}{Number of cores to use for parallelization with \code{\link{mclapply.hack}}.}
 }
 \value{
 After execution, 3 pdf files will be saved in the reports folder; the first 2 include
@@ -38,7 +40,7 @@ primers <- read.table("./data/primers.csv", sep="\t", header=T,
 PoolQCbyRead(flashfiles,samples,primers)
 }
 \seealso{
-\code{\link{R1R2toFLASH}},\code{\link{QCscores}}
+\code{\link{R1R2toFLASH}}, \code{\link{QCscores}}
 }
 \author{
 Alicia Aranda
