@@ -68,7 +68,7 @@ int.res <- ConsHaplotypes(trimfiles, pm.res, thr, min.seq.len)
 
 }
 \seealso{
-\code{\link{muscle}},\code{\link{IntersectStrandHpls}},\code{\link{demultiplexPrimer}},\code{\link{SaveHaplotypes}}
+\code{\link{muscle}}, \code{\link{IntersectStrandHpls}}, \code{\link{demultiplexPrimer}}, \code{\link{SaveHaplotypes}}
 }
 \author{
 Alicia Aranda

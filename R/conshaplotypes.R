@@ -42,7 +42,7 @@
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom methods as
 #' @importFrom methods is
-#' @seealso \code{\link{muscle}},\code{\link{IntersectStrandHpls}},\code{\link{demultiplexPrimer}},\code{\link{SaveHaplotypes}}
+#' @seealso \code{\link{muscle}}, \code{\link{IntersectStrandHpls}}, \code{\link{demultiplexPrimer}}, \code{\link{SaveHaplotypes}}
 #' @examples
 #' splitDir <- "./splits"
 #' # Save the file names with complete path

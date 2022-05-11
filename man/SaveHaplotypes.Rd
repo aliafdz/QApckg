@@ -34,7 +34,7 @@ This function is similar to \code{\link{SortByMutations}} function from \code{QS
   are eliminated. Also, the final sequences are saved in a FASTA file.
 }
 \seealso{
-\code{\link{SortByMutations}},\code{\link{ConsHaplotypes}},\code{\link{IntersectStrandHpls}}
+\code{\link{SortByMutations}}, \code{\link{ConsHaplotypes}}, \code{\link{IntersectStrandHpls}}
 }
 \author{
 Alicia Aranda

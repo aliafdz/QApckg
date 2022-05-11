@@ -81,7 +81,7 @@ mids <- read.table("./data/mids.csv", sep="\t", header=T,
 pm.res <- demultiplexPrimer(splitfiles,samples,primers,prmm,min.len,target.st,target.end)
 }
 \seealso{
-\code{\link{demultiplexMID}},\code{\link{primermatch}}
+\code{\link{demultiplexMID}}, \code{\link{primermatch}}
 }
 \author{
 Alicia Aranda

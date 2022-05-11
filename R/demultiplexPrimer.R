@@ -45,7 +45,7 @@
 #' @import QSutils
 #' @importFrom RColorBrewer brewer.pal
 #' @export
-#' @seealso \code{\link{demultiplexMID}},\code{\link{primermatch}}
+#' @seealso \code{\link{demultiplexMID}}, \code{\link{primermatch}}
 #' @examples
 #' # Set parameters
 #' prmm <- 3

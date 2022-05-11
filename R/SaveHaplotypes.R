@@ -21,7 +21,7 @@
 #'   After execution, a FASTA file named as \code{flnm} with the \code{bseqs} element will be generated.
 #'
 #' @import Biostrings
-#' @seealso \code{\link{SortByMutations}},\code{\link{ConsHaplotypes}},\code{\link{IntersectStrandHpls}}
+#' @seealso \code{\link{SortByMutations}}, \code{\link{ConsHaplotypes}}, \code{\link{IntersectStrandHpls}}
 #' @export
 #' @author Alicia Aranda
 
