@@ -20,6 +20,7 @@
 #'   and a message indicating that the files are generated will appear in console.
 #'
 #' @export
+#' @import parallel
 #' @examples
 #' runDir <- "./run"
 #' flashDir <- "./flash"
@@ -213,7 +214,7 @@ for(i in 1:length(snms))
     par(mfrow=c(2,1),mar=c(3,4,1.5,2)+0.1)
 
     # Guarda els resultats de la funció 'QCscores()' sobre FLASH que corresponen al pool avaluat
-    lst <- flashdata[,i]
+    lst <- flashdata[[i]]
 
     # Matriu amb quantils de phred score per posició entre total de reads per les dades FLASH
     fvnm <- lst$fvnq

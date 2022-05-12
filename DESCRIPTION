@@ -19,7 +19,8 @@ git_url: <https://github.com/aliafdz/QApckg>
 Imports:
     methods,
     ape, 
-    stats
+    stats,
+    ltools
 Depends:
     R (>= 4.1),
     ShortRead,
@@ -27,7 +28,6 @@ Depends:
     Biostrings,
     stringr,
     foreach,
-    doParallel,
     QSutils,
     muscle
 Suggests: 

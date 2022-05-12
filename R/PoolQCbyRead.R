@@ -13,6 +13,7 @@
 #' @param ncores Number of cores to use for parallelization with \code{\link{mclapply.hack}}.
 #'
 #' @importFrom foreach foreach
+#' @import parallel
 #' @return After execution, 3 pdf files will be saved in the reports folder; the first 2 include
 #'   the QC by read plots for each pool used in the experiment, and the 3rd shows the read length
 #'   distribution for each pool. A message indicating that the files are generated will appear in console.
