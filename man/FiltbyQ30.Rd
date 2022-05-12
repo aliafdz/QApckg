@@ -4,7 +4,7 @@
 \alias{FiltbyQ30}
 \title{Filter haplotypes by Q30}
 \usage{
-FiltbyQ30(max.pct = 0.05, flashfiles, flashres)
+FiltbyQ30(max.pct = 0.05, flashfiles, flashres, ncores = 1)
 }
 \arguments{
 \item{max.pct}{The maximum percentage of bases below Q30 allowed in reads (by default,5\%).}
@@ -14,6 +14,8 @@ with fastq extension.}
 
 \item{flashres}{Table of results obtained after the execution of \code{\link{R1R2toFLASH}}
 function.}
+
+\item{ncores}{Number of cores to use for parallelization with \code{\link{mclapply.hack}}.}
 }
 \value{
 A \code{\link{data.frame}} object containing FLASH and Filtering results.

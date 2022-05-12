@@ -9,6 +9,7 @@
 #'   with fastq extension.
 #' @param flashres Table of results obtained after the execution of \code{\link{R1R2toFLASH}}
 #'   function.
+#' @param ncores Number of cores to use for parallelization with \code{\link{mclapply.hack}}.
 #'
 #' @details This function is designed to be applied after \code{\link{R1R2toFLASH}} function from
 #'   the same package. If \code{flashres} is not specified but FLASH extension was previously
@@ -41,7 +42,7 @@
 #' filtres <- FiltbyQ30(max.pct=0.05,flashfiles,flashres)
 #' @author Alicia Aranda
 
-FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres){
+FiltbyQ30 <- function(max.pct=0.05,flashfiles,flashres,ncores=1){
   # La taula resulta d'aplicar la funció R1R2toFLASH
   # Si no existeix la variable o no s'ha incorporat, llegeix la taula del fitxer
   # .txt que podria estar guardat a la carpeta de reports
@@ -97,14 +98,12 @@ oflnms <- paste(parts[,"PatID"],"flashFilt.fastq",sep="_")
 oflnms <- file.path(flashFiltDir,oflnms)
 
 ### Loop sobre pools
-# Vector que inclou tants 0s com nº de pools
-freads <- integer(length(snms))
+# Vector que inclou tants NAs com nº de pools
+freads <- rep(NA,length(snms))
 
-for(i in 1:length(snms))
-{
+# Aplica paral·lelització amb 'mclapply.hack()' del paquet
+s<- mclapply.hack(c(1:length(snms)),function(i){
   # Si existeix el fitxers flashFilt a la carpeta, l'elimina (ja que s'ha de generar ara)
-  if(file.exists(oflnms[i]))
-    file.remove(oflnms[i])
 
   ### Aplica streamer (iteració) en el fitxer fastq avaluat
   strm <- FastqStreamer(flashfiles[i])
@@ -133,7 +132,7 @@ for(i in 1:length(snms))
     filt.rds <- filt.rds+length(sqq)
 
     # Genera el fitxer amb extensió fastq que es guardarà a flashFilt
-    writeFastq(sqq,oflnms[i],mode,compress=TRUE)
+    #writeFastq(sqq,oflnms[i],mode,compress=TRUE)
     # Canvia la variable mode perquè a la propera iteració es guardin les noves
     # seqüències filtrades en el mateix fastq sense generar un de nou
     mode <- "a"
@@ -141,10 +140,11 @@ for(i in 1:length(snms))
   close(strm)
   # Guarda per cada pool el nº de reads després del filtrat
   freads[i] <- filt.rds
-}
+  return(freads)
+},mc.cores=ncores)
 
 # Afegeix al fitxer que tenia de FLASH els valors de nº de reads després de filtrat Q30
-flashres$FiltQ30 <- freads
+flashres$FiltQ30 <- unlist(s)[which(!is.na(unlist(s)))]
 # També afegeix al fitxer el total de reads (resultat de sumar els que van fer extensió a FLASH i els que no)
 flashres$Raw <- flashres$Extended+flashres$NoExtd
 
