@@ -27,7 +27,7 @@ executeFLASH <- function(R1,R2,flash,flash.opts,outfile='./flash.fastq') {
 
   # Concatena la ruta de l'executable flash, els paràmetres definits en el fitxer QA i la ruta dels fitxers
   # R1 i R2 del pool avaluat. També afegeix una opció per guardar els arxius generats en una carpeta nova.
-  command <- paste(flash,flash.opts,R1,R2,"-d, --output-directory=./tmp",collapse=" ")
+  command <- paste(flash,flash.opts,R1,R2,"--output-directory=./tmp",collapse=" ")
 
   # La funció system() invoca una comanda especificada en l'argument
   # Executa el programa FLASH -> es guarden els fitxers següents a la carpeta global: out.extendedFrags.fastq,
