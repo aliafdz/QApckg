@@ -7,7 +7,7 @@
 QCscores(flnm, ln = 301, byPos = FALSE, byRead = FALSE)
 }
 \arguments{
-\item{flnm}{Fastq file to be evaluated.}
+\item{flnm}{Path of the fastq file to be evaluated.}
 
 \item{ln}{Amplicon length.}
 

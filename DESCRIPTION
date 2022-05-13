@@ -7,7 +7,7 @@ Maintainer: Alicia Aranda <ali.afernandez99@gmail.com>
 Description: This package provides a set of functions for NGS data processing, 
   quality analysis, filtering and demultiplexing. These functions are designed
   to be applied in consecutive order on Miseq raw data to obtain a set of 
-  intersected haplotypes for each evaluated sample. With this consensus haplotypes 
+  intersected haplotypes for each evaluated sample. With these consensus haplotypes 
   different kinds of computations can be made, i.e genotyping, variant calling and
   quasispecies diversity. 
 License: file LICENSE

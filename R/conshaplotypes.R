@@ -16,7 +16,7 @@
 #' @param min.seq.len Threshold to filter haplotypes at minimum length before intersection.
 #'
 #' @return The function returns a \code{\link{data.frame}} object containing the intersection results
-#'   for each combination of patient and pool, including the initial number of reads, filtered out reads
+#'   for each combination of patient and amplicon region, including the initial number of reads, filtered out reads
 #'   (for being below a given frequency threshold or unique to a single strand), overlapping frequency
 #'   between both strands and the common reads (in percentage and nº of reads).
 #'

@@ -7,7 +7,7 @@
 GblYield(samples, filtres, pm.res, int.res)
 }
 \arguments{
-\item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
+\item{samples}{Data frame with relevant information to identify the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
 \item{filtres}{The data frame returned by \code{\link{FiltbyQ30}} function.}
@@ -21,7 +21,7 @@ and \code{poolTable} data frames.}
 After execution, two report files will be saved in the reports folder:
   \enumerate{
   \item{\code{GlobalYieldBarplots.pdf}: Includes some barplots representing the yield (in nº of
-    reads and percentage) by each step of the quality assessment pipeline. These
+    reads and percentage) by each step of the quality assessment pipeline. This
     representation is done for all pools included in the analysis and also for global results.}
   \item{\code{GlobalYield-SumRprt.txt}: Summary report including global yield by analysis step in
     number of reads, in percentage by step and percentage referred to raw reads. }}

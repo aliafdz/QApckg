@@ -9,9 +9,9 @@
 #'
 #'
 #' @param flashffiles Vector including the paths of FLASH filtered files, with fastq extension.
-#' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
+#' @param samples Data frame with relevant information to identify the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
-#' @param mids Data frame with the association between MID identifiers and their sequences.
+#' @param mids Data frame containing the MID sequences and their identifiers.
 #' @param maxdif Number of mismatches allowed between MID and read sequences.
 #' @param mid.start Expected start position for MID in sequence.
 #' @param mid.end Expected end position for MID in sequence.
@@ -196,18 +196,6 @@ for(i in 1:length(pools)){
 # Guarda una nova columna a la taula de resultats on s'inclou el nº total de reads assignats a un MID
 # per pool
 by.pools$MIDReads <- tapply(nreads$Reads,factor(nreads$Pool.Nm,levels=pools),sum)
-# Borra els noms de les files de la taula nreads i guarda el resultat retornat per la funció
-rownames(nreads) <- NULL
-result <- list(nreads=nreads,by.pools=by.pools)
-
-# Genera un fitxer .txt que es guardarà a la carpeta reports, on es guadarà en format taula els resultats
-# representats als gràfics
-sink(file.path(repDir,"SplidByMIDs.Rprt.txt"))
-cat("\nCoverage by Pool and MIDs\n\n")
-print(nreads)
-cat("\n")
-print(by.pools)
-sink()
 
 # Genera el pdf indicar que es guardarà a la carpeta reports
 pdf.flnm <- file.path(repDir,"SplidByMIDs.barplots.pdf")
@@ -230,6 +218,20 @@ legend("top",horiz=TRUE,fill=pal2[1:3],legend=colnames(by.pools),cex=0.8)
 title(main="Coverage by Pool",line=1.5)
 
 dev.off()
+
+# Borra els noms de les files de la taula nreads i guarda el resultat retornat per la funció
+rownames(nreads) <- NULL
+result <- list(nreads=nreads,by.pools=by.pools)
+
+# Genera un fitxer .txt que es guardarà a la carpeta reports, on es guadarà en format taula els resultats
+# representats als gràfics
+sink(file.path(repDir,"SplidByMIDs.Rprt.txt"))
+cat("\nCoverage by Pool and MIDs\n\n")
+print(nreads)
+cat("\n")
+print(by.pools)
+sink()
+
 
 return(result)
 }

@@ -16,10 +16,10 @@ demultiplexMID(
 \arguments{
 \item{flashffiles}{Vector including the paths of FLASH filtered files, with fastq extension.}
 
-\item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
+\item{samples}{Data frame with relevant information to identify the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
-\item{mids}{Data frame with the association between MID identifiers and their sequences.}
+\item{mids}{Data frame containing the MID sequences and their identifiers.}
 
 \item{maxdif}{Number of mismatches allowed between MID and read sequences.}
 

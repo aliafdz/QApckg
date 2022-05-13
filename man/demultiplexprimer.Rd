@@ -17,10 +17,10 @@ demultiplexPrimer(
 \arguments{
 \item{splitfiles}{Vector including the paths of demultiplexed files by MID, with fna extension.}
 
-\item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
+\item{samples}{Data frame with relevant information to identify the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
-\item{primers}{Data frame with information about the \emph{primers} used in the experiment, including
+\item{primers}{Data frame with information about the template specific primers used in the experiment, including
 \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
   and \code{Aa.lpos} columns.}
 
@@ -28,7 +28,7 @@ demultiplexPrimer(
 
 \item{min.len}{Minimum length desired for haplotypes. Any sequence below this length will be discarted.}
 
-\item{target.st, target.end}{Initial and end positions between which primer sequences will be searched.}
+\item{target.st, target.end}{Initial and end positions between which template specific primer sequences will be searched.}
 }
 \value{
 A list containing the following:
@@ -37,7 +37,7 @@ A list containing the following:
   \item{poolTable}{A table with the number of total trimmed reads and the yield of the process by pool.}
 
   After execution, a FASTA file for each combination of strand, MID and pool will be saved in a newly
-  created trim folder, including its associated reads.
+  created trim folder.
   Additionaly, some report files will be generated in a reports folder:
   \enumerate{
   \item{\code{AmpliconLengthsRprt.txt}: Includes the amplicon lengths of both strands
@@ -51,22 +51,22 @@ A list containing the following:
   \item{\code{SplittedReadsFileTable.txt}: A file containing the same information as \code{fileTable}.}}
 }
 \description{
-Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.
-It is important to note that MID and primer sequences will be trimmed from reads after the identification of primers,
+Demultiplex reads by identifying template specific primer sequences within windows of expected positions in the sequenced reads.
+It is important to note that MID and template specific primer sequences will be trimmed from reads after the identification of primers,
   but amplicon length is not predetermined.
 }
 \details{
-After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, primer sequences are identified
+After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, template specific primer sequences are identified
   in both strands. First, forward strands are recognized by searching FW primer sequence in 5' end and the
   reverse complement of RV primer sequence in 3' end. Then, reverse strands are recognized by searching RV
-  primer sequence in 5' end and FW primer sequence in 3' end, obtaining the reverse complement of all reads
+  primer sequence in 5' end and FW primer sequence in 3' end, after obtaining the reverse complement of all reads
   identified as reverse strands. So, both strands are obtained in a way that facilitates their intersection.
 }
 \examples{
 # Set parameters
 prmm <- 3
 min.len <- 180
-# The expected window for primer sequences will depend on the presence of
+# The expected window for template specific primer sequences will depend on the presence of
 # adapters, MID sequences and/or M13 primer.
 target.st <- 1
 target.end <- 100

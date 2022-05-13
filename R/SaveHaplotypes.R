@@ -5,13 +5,13 @@
 #'
 #' @details This function is similar to \code{\link{SortByMutations}} function from \code{QSutils}
 #'   package but has new features. For example, in this case haplotypes with a huge number
-#'   of mutations with respect to the dominant one are discarted, and columns with all gaps
+#'   of mutations (defined by \code{max.difs}) with respect to the dominant one are discarted, and columns with all gaps
 #'   are eliminated. Also, the final sequences are saved in a FASTA file.
 #'
-#' @param flnm File name of the FASTA file that will be generated with haplotype sequences.
+#' @param flnm File path of the FASTA file that will be generated with haplotype sequences.
 #' @param bseqs Character object with the haplotype alignment.
 #' @param nr Vector with the haplotype counts.
-#' @param max.difs Maximum number of mismatches allowed with respect to the dominant haplotype.
+#' @param max.difs Maximum number of mismatches allowed with respect to the dominant one
 #'
 #' @return A list containing the following:
 #'   \item{bseqs}{DNAStringSet or AAStringSet with the haplotype sequences.}

@@ -6,7 +6,7 @@
 #' @note This function is only defined for correct execution of \code{\link{PoolQCbyPos}} and \code{\link{PoolQCbyRead}}
 #'  functions from the same package.
 #'
-#' @param flnm Fastq file to be evaluated.
+#' @param flnm Path of the fastq file to be evaluated.
 #' @param ln Amplicon length.
 #' @param byPos Logical indicating if QC by position should be computed.
 #' @param byRead Logical indicating if QC by read should be computed.

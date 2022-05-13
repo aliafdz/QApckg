@@ -6,7 +6,7 @@
 #'
 #'
 #' @param runfiles Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
-#' @param flash File path of FLASH executable.
+#' @param flash File path of the FLASH executable.
 #' @param min.ov Minimum overlap (in nt) between R1 and R2 reads.
 #' @param max.ov Maximum overlap (in nt) between R1 and R2 reads.
 #' @param err.lv Mismatch fraction accepted in overlapping.
@@ -59,7 +59,7 @@ R1R2toFLASH <- function(runfiles,flash,min.ov=20,max.ov=300,err.lv=0.10)
 
   # Afegim un test per comprovar que l'executable FLASH existeix
   if(!file.exists(flash)){
-    stop("Couldn't find FLASH executable, please indicate the correct path.\n")
+    stop("Couldn't find the FLASH executable, please indicate the correct path.\n")
   }
 
   # Si no existeixen les carpetes on es guarden els fitxers resultants de la funció,

@@ -1,12 +1,12 @@
 #' @title Identfication of primer specific sequences
 #'
-#' @description Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
+#' @description Identifies template specific primer sequences in reads from a single sample and adds primer match results in defined tables.
 #'
 #' @details This function is only defined for correct execution of \code{\link{demultiplexPrimer}} function from the same package, so it
 #'   cannot be executed individually.
 #'
 #' @param j Integer corresponding to the sample (element in \code{idx}) to be evaluated.
-#' @param idx Vector with index of samples to be evaluated (for one pool).
+#' @param idx Vector including the indices of samples that correspond to the evaluated pool.
 #' @param flnms Vector including the names of demultiplexed files by MID, with fna extension, corresponding to the evaluated samples.
 #' @param pool Character indicating the name of sample pool.
 #' @return This function requires the result tables named \code{FlTbl, PoolTbl} and \code{pr.res} that will be filled with the data collected
@@ -33,8 +33,8 @@ primermatch <- function(j,idx,flnms,pool){
   # Llegeix el fitxer .fna del MID de la mostra avaluada
   seqs <- readDNAStringSet(flnms)
 
-  ### Per guardar el nº total de reads abans de demultiplexar per primers:
-  totalseqs <- length(seqs)
+  # Guarda el nº total de reads abans de demultiplexar per primers
+  pr.res$Tot.reads[jj] <- length(seqs)
 
   # Afegeix el total de reads del fitxer del MID concret al total del pool al qual correspon
   PoolTbl[pool,1] <- PoolTbl[pool,1] + length(seqs)
@@ -52,6 +52,11 @@ primermatch <- function(j,idx,flnms,pool){
   ### Elimina les seqüències del fitxer del MID avaluat que tinguin longitud menor a 180
   seqs <- seqs[width(seqs)>min.len]
 
+  # Calcula quantes seqs s'han eliminat per ser menor a la longitud establerta
+  shorts <- totalseqs - length(seqs)
+
+  pr.res$Shorts[jj] <- sum(shorts)
+
   ### Coincidències cadena forward
   # Guarda la seq del primer FW específic de la regió avaluada
   pr.up <- primers$Primer.FW[ ipr ]
@@ -68,8 +73,7 @@ primermatch <- function(j,idx,flnms,pool){
   flags <- elementNROWS(up.matches)>=1
   # Variable buida de nombre enter
   #nr <- integer()
-  # Calcula quantes seqs s'han eliminat per ser menor a la longitud establerta
-  shorts <- totalseqs - length(seqs) ####
+
   # Genera un fitxer .fna, el nom del qual està format per l'ID del pacient, la regió (amplicó) avaluada,
   # i la consecució PrFW.fna (primer forward), que es guarda a la carpeta trim
   up.flnm <- paste(samples$Patient.ID[jj],primers$Ampl.Nm[ipr],"PrFW.fna",
@@ -177,18 +181,16 @@ primermatch <- function(j,idx,flnms,pool){
   # seqüències després de retallar-les, Sumatori del total de reads en el MID avaluat (mostra) que s'han assignat
   # i Total d'haplotips detectats
   FlTbl[k,] <- c(up.flnm,samples$Patient.ID[jj],primers$Ampl.Nm[ipr],
-                           ipr,"fw",primers$FW.tpos[ipr],mean(width(seqs.up)),
+                           ipr,"fw",primers$FW.tpos[ipr],round(mean(width(seqs.up)),1),
                            sum(nr),length(nr))
 
   # Afegeix el nº de reads (del MID concret) idenficats amb la cadena FW al total del pool al qual correspon
   PoolTbl[pool,2] <- PoolTbl[pool,2] + sum(nr)
 
-  # A l'altra taula de reports afegeix, per la iteració i cadena avaluada:
-  # Els reads totals inicials (els de partida), Reads que s'han pogut associar a la cadena FW,
-  # Reads eliminats per longitud menor al mínim (no cobreixen l'amplicó sencer) i
-  # Sumatori del total de reads en el MID avaluat (mostra) que s'han assignat
-  pr.res[k,] <- c(totalseqs,sum(flags),sum(shorts),sum(nr))
-
+  # A l'altra taula de reports afegeix, per la iteració i cadena avaluada,
+  # el sumatori del total de reads en el MID avaluat (mostra) que s'han assignat
+  pr.res$FW.fn.match[jj] <- sum(nr)
+  pr.res$Fn.reads[jj] <- sum(nr)
 
   ### Coincidències cadena reverse
   # Aquestes seqüències corresponen a la cadena reverse, és a dir, presenten el primer RV en la regió 5' i la reversa
@@ -207,6 +209,9 @@ primermatch <- function(j,idx,flnms,pool){
   # Aplica la funció que està definida al fitxer principal
   # Indica quines seqüències han trobat 1 o més coincidències amb la seq del primer RV
   flags <- elementNROWS(dn.matches)>=1
+  # Guarda a la taula de resultats el nº de coincidències amb el primer RV
+  pr.res$RV.match[jj] <- sum(flags)
+
   # Torna a buidar aquestes variables per guardar les noves dades
   nr <- integer()
   shorts <- integer()
@@ -315,14 +320,15 @@ primermatch <- function(j,idx,flnms,pool){
   # Després de fer la reversa complementària de les cadenes dn (reverse), ambdues cadenes
   # es troben el mateix sentit, per tant la posició inicial és la mateixa (columna Pos)
   FlTbl[k,] <- c(dn.flnm,samples$Patient.ID[jj],primers$Ampl.Nm[ipr],
-               ipr,"rv",primers$FW.tpos[ipr],mean(width(seqs.dn)),
+               ipr,"rv",primers$FW.tpos[ipr],round(mean(width(seqs.dn)),1),
                sum(nr),length(nr))
 
   # Afegeix el nº de reads (del MID concret) idenficats amb la cadena FW al total del pool al qual correspon
   PoolTbl[pool,2] <- PoolTbl[pool,2] + sum(nr)
 
   # Guarda tots els resultats igual que en el cas de les cadenes up (forward) a l'altra taula (nº de reads per pas)
-  pr.res[k,] <- c(treads,sum(flags),sum(shorts),sum(nr))
+  pr.res$RV.fn.match[jj] <- sum(nr)
+  pr.res$Fn.reads[jj] <- pr.res$Fn.reads[jj] + sum(nr)
 
 # Guarda les taules de resultats a l'entorn global d'execució.
 pr.res<<-pr.res

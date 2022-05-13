@@ -9,7 +9,7 @@ primermatch(j, idx, flnms, pool)
 \arguments{
 \item{j}{Integer corresponding to the sample (element in \code{idx}) to be evaluated.}
 
-\item{idx}{Vector with index of samples to be evaluated (for one pool).}
+\item{idx}{Vector including the indices of samples that correspond to the evaluated pool.}
 
 \item{flnms}{Vector including the names of demultiplexed files by MID, with fna extension, corresponding to the evaluated samples.}
 
@@ -20,7 +20,7 @@ This function requires the result tables named \code{FlTbl, PoolTbl} and \code{p
   from the evaluated sample. This results will be further evaluated in \code{\link{demultiplexPrimer}} parent function.
 }
 \description{
-Identifies primer sequences in reads from a single sample and adds primer match results in defined tables.
+Identifies template specific primer sequences in reads from a single sample and adds primer match results in defined tables.
 }
 \details{
 This function is only defined for correct execution of \code{\link{demultiplexPrimer}} function from the same package, so it

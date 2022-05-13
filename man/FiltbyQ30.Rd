@@ -18,7 +18,9 @@ function.}
 \item{ncores}{Number of cores to use for parallelization with \code{\link{mclapply.hack}}.}
 }
 \value{
-A \code{\link{data.frame}} object containing FLASH and Filtering results.
+A \code{\link{data.frame}} object containing FLASH and Filtering results. This results
+  table includes two new columns with respect to FLASH results table, named \emph{FiltQ30} (number of filtered reads)
+  and \emph{Raw} (total sequencing reads).
 
 After the execution, a fastq file with remaining reads for each pool will be saved in
   a new flashFilt folder (if it is not previously created). Additionaly, two report files will be
@@ -27,10 +29,9 @@ After the execution, a fastq file with remaining reads for each pool will be sav
   \item{\code{FiltQ30.barplot.pdf}: Includes a first Bar plot representing raw reads,
     extended reads by FLASH and filtered reads, and a second Bar plot with
     the yield by process for each pool.}
-  \item{\code{FiltQ30_report.txt}: Includes the same data returned by the function.}
+  \item{\code{FiltQ30_report.txt}: Includes the same data frame returned by the function
+    containing FLASH and Filtering results.}
 }
-  The results table obtained includes two new columns with respect to FLASH results
-    table, named FiltQ30 (number of filtered reads) and Raw (total sequencing reads).
 }
 \description{
 This function applies \code{\link{FastqStreamer}} over a fastq file and removes

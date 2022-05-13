@@ -9,7 +9,7 @@ PoolQCbyRead(flashfiles, samples, primers, ncores = 1)
 \arguments{
 \item{flashfiles}{Vector including the paths of FLASH processed files, with fastq extension.}
 
-\item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
+\item{samples}{Data frame with relevant information to identify the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
 \item{primers}{Data frame with information about the \emph{primers} used in the experiment, including
@@ -19,13 +19,19 @@ PoolQCbyRead(flashfiles, samples, primers, ncores = 1)
 \item{ncores}{Number of cores to use for parallelization with \code{\link{mclapply.hack}}.}
 }
 \value{
-After execution, 3 pdf files will be saved in the reports folder; the first 2 include
-  the QC by read plots for each pool used in the experiment, and the 3rd shows the read length
-  distribution for each pool. A message indicating that the files are generated will appear in console.
+After execution a message will appear in console, indicating that the following
+report files have been generated (and saved in a reports folder):
+\enumerate{
+  \item{\code{PoolQCbyRead_PoolName.pdf}: This file is generated for each pool used in the
+    experiment, after extracting its name from \code{samples} data frame. The pdf includes
+    includes a representation of bases below Q30 (in nº of reads and percentage) by read.}
+  \item{\code{PoolReadLengths.pdf}: Includes one plot for each pool representing the read length distribution.}}
 }
 \description{
-This function evaluates fastq files after the execution of FLASH program to extend
-  paired-end reads, and returns QC by read plots in pdf format.
+This function evaluates fastq files after the execution of the FLASH program to extend
+  paired-end reads, and returns QC by read plots in pdf format. The results of this function are
+  important for defining the maximum fraction of bases below Q30 allowed in reads, which will
+  be used in \code{\link{FiltbyQ30}} function.
 }
 \examples{
 flashDir <- "./flash"

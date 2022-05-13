@@ -2,7 +2,7 @@
 #'
 #' @description Generates global yield reports for each evaluated pool from previous results.
 #'
-#' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
+#' @param samples Data frame with relevant information to identify the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param filtres The data frame returned by \code{\link{FiltbyQ30}} function.
 #' @param pm.res The list returned by \code{\link{demultiplexPrimer}}, including \code{fileTable}
@@ -15,7 +15,7 @@
 #' @return After execution, two report files will be saved in the reports folder:
 #'   \enumerate{
 #'   \item{\code{GlobalYieldBarplots.pdf}: Includes some barplots representing the yield (in nº of
-#'     reads and percentage) by each step of the quality assessment pipeline. These
+#'     reads and percentage) by each step of the quality assessment pipeline. This
 #'     representation is done for all pools included in the analysis and also for global results.}
 #'   \item{\code{GlobalYield-SumRprt.txt}: Summary report including global yield by analysis step in
 #'     number of reads, in percentage by step and percentage referred to raw reads. }}
@@ -198,7 +198,6 @@ cat("\n===================================\n")
 cat("\nIn number of reads:\n\n")
 # Guarda la taula de nº de reads segons el pas de l'anàlisi per pool, i afegeix el sumatori
 # dels dos pools a la tercera fila
-# Nota: es podria substituir per la variable Tgbl
 gbly <- rbind(gbly,TOTAL=Tgbl)
 print(gbly)
 

@@ -9,7 +9,7 @@ PoolQCbyPos(flashfiles, samples, primers, runfiles, ncores = 1)
 \arguments{
 \item{flashfiles}{Vector including the paths of FLASH processed/filtered files, with fastq extension.}
 
-\item{samples}{Data frame with relevant information about the samples of the sequencing experiment, including
+\item{samples}{Data frame with relevant information to identify the samples of the sequencing experiment, including
 \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.}
 
 \item{primers}{Data frame with information about the \emph{primers} used in the experiment, including
@@ -25,10 +25,19 @@ If the function is applied for filtered fastq files, this argument must be NA or
 After execution, a pdf file for each pool used in the experiment will be saved in a
   reports folder (if it is not previously defined, the function will create this folder),
   and a message indicating that the files are generated will appear in console.
+
+If the function is applied after the execution of FLASH, the pdf file(s) will be named
+  \code{PoolQCbyPos.PoolName.pdf}, where \emph{PoolName} is extracted from \code{samples} data frame.
+  The file(s) contain a QC plot for both raw data and extended fastq files, and also the read length
+  distribution for the evaluated pool.
+
+In contrast, if the function is applied after Phred Score filtering, the generated pdf file(s)
+  will be named \code{PoolFiltQCbyPos.PoolName.pdf}, including a QC plot for the filtered data and
+  another plot representing read length distribution.
 }
 \description{
-This function evaluates fastq files before and after the execution of FLASH program to extend
-  paired-end reads, and returns QC by position plots in pdf format.
+This function evaluates fastq files before and after the execution of the FLASH program to extend
+  paired-end reads, and returns Quality Control (QC) by position plots in pdf format.
 
 It can be applied also after filtering FLASH fastq files by Phred Score.
 }
@@ -45,6 +54,9 @@ samples <- read.table("./data/samples.csv", sep="\t", header=T,
 primers <- read.table("./data/primers.csv", sep="\t", header=T,
                       stringsAsFactors=F)
 PoolQCbyPos(flashfiles,samples,primers,runfiles)
+}
+\seealso{
+\code{\link{R1R2toFLASH}}, \code{\link{FiltbyQ30}}, \code{\link{QCscores}}, \code{\link{QCplot}}
 }
 \author{
 Alicia Aranda

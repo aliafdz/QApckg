@@ -1,14 +1,14 @@
 #' @title Evaluate QC by position
 #'
-#' @description This function evaluates fastq files before and after the execution of FLASH program to extend
-#'   paired-end reads, and returns QC by position plots in pdf format.
+#' @description This function evaluates fastq files before and after the execution of the FLASH program to extend
+#'   paired-end reads, and returns Quality Control (QC) by position plots in pdf format.
 #' @description It can be applied also after filtering FLASH fastq files by Phred Score.
 #'
 #'
 #' @param runfiles Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.
 #'   If the function is applied for filtered fastq files, this argument must be NA or missing.
 #' @param flashfiles Vector including the paths of FLASH processed/filtered files, with fastq extension.
-#' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
+#' @param samples Data frame with relevant information to identify the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
 #' @param primers Data frame with information about the \emph{primers} used in the experiment, including
 #'   \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
@@ -18,8 +18,16 @@
 #' @return After execution, a pdf file for each pool used in the experiment will be saved in a
 #'   reports folder (if it is not previously defined, the function will create this folder),
 #'   and a message indicating that the files are generated will appear in console.
+#' @return If the function is applied after the execution of FLASH, the pdf file(s) will be named
+#'   \code{PoolQCbyPos.PoolName.pdf}, where \emph{PoolName} is extracted from \code{samples} data frame.
+#'   The file(s) contain a QC plot for both raw data and extended fastq files, and also the read length
+#'   distribution for the evaluated pool.
+#' @return In contrast, if the function is applied after Phred Score filtering, the generated pdf file(s)
+#'   will be named \code{PoolFiltQCbyPos.PoolName.pdf}, including a QC plot for the filtered data and
+#'   another plot representing read length distribution.
 #'
 #' @export
+#' @seealso \code{\link{R1R2toFLASH}}, \code{\link{FiltbyQ30}}, \code{\link{QCscores}}, \code{\link{QCplot}}
 #' @import parallel
 #' @examples
 #' runDir <- "./run"
@@ -206,7 +214,7 @@ for(i in 1:length(snms))
       ylab="Read length",las=2,ylim=c(0,max(stats)))
   title(main="Read length distributions")
 }
-  else if(is.na(runfiles)){
+  else if(is.na(runfiles)[1]){
     # Genera el pdf indicat pel pool avaluat
     pdf.flnm <- paste("PoolFiltQCbyPos",snms[i],"pdf",sep=".")
     # Genera la ruta on es guardarà el pdf (reports)

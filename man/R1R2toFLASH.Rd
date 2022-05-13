@@ -9,7 +9,7 @@ R1R2toFLASH(runfiles, flash, min.ov = 20, max.ov = 300, err.lv = 0.1)
 \arguments{
 \item{runfiles}{Vector including the paths of Illumina MiSeq Raw Data files, often with fastq.gz extension.}
 
-\item{flash}{File path of FLASH executable.}
+\item{flash}{File path of the FLASH executable.}
 
 \item{min.ov}{Minimum overlap (in nt) between R1 and R2 reads.}
 

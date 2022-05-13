@@ -1,25 +1,24 @@
 #' @title Trim specific primer sequences
 #'
-#' @description Demultiplex reads by identifying primer sequences within windows of expected positions in the sequenced reads.
-#' It is important to note that MID and primer sequences will be trimmed from reads after the identification of primers,
+#' @description Demultiplex reads by identifying template specific primer sequences within windows of expected positions in the sequenced reads.
+#' It is important to note that MID and template specific primer sequences will be trimmed from reads after the identification of primers,
 #'   but amplicon length is not predetermined.
 #'
-#' @details After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, primer sequences are identified
+#' @details After demultiplexing reads by MID with \code{\link{demultiplexMID}} function, template specific primer sequences are identified
 #'   in both strands. First, forward strands are recognized by searching FW primer sequence in 5' end and the
 #'   reverse complement of RV primer sequence in 3' end. Then, reverse strands are recognized by searching RV
-#'   primer sequence in 5' end and FW primer sequence in 3' end, obtaining the reverse complement of all reads
+#'   primer sequence in 5' end and FW primer sequence in 3' end, after obtaining the reverse complement of all reads
 #'   identified as reverse strands. So, both strands are obtained in a way that facilitates their intersection.
 #'
-#'
 #' @param splitfiles Vector including the paths of demultiplexed files by MID, with fna extension.
-#' @param samples Data frame with relevant information about the samples of the sequencing experiment, including
+#' @param samples Data frame with relevant information to identify the samples of the sequencing experiment, including
 #'   \code{Patient.ID, MID, Primer.ID, Region, RefSeq.ID}, and \code{Pool.Nm} columns.
-#' @param primers Data frame with information about the \emph{primers} used in the experiment, including
+#' @param primers Data frame with information about the template specific primers used in the experiment, including
 #'   \code{Ampl.Nm, Region, Primer.FW, Primer.RV, FW.pos, RV.pos, FW.tpos, RV.tpos, Aa.ipos},
 #'     and \code{Aa.lpos} columns.
 #' @param prmm Number of mismatches allowed between the primers and read sequences.
 #' @param min.len Minimum length desired for haplotypes. Any sequence below this length will be discarted.
-#' @param target.st,target.end Initial and end positions between which primer sequences will be searched.
+#' @param target.st,target.end Initial and end positions between which template specific primer sequences will be searched.
 #'
 #' @return A list containing the following:
 #'   \item{fileTable}{A table with relevant data of each FASTA file generated in execution,
@@ -27,7 +26,7 @@
 #'   \item{poolTable}{A table with the number of total trimmed reads and the yield of the process by pool.}
 #'
 #'   After execution, a FASTA file for each combination of strand, MID and pool will be saved in a newly
-#'   created trim folder, including its associated reads.
+#'   created trim folder.
 #'   Additionaly, some report files will be generated in a reports folder:
 #'   \enumerate{
 #'   \item{\code{AmpliconLengthsRprt.txt}: Includes the amplicon lengths of both strands
@@ -50,7 +49,7 @@
 #' # Set parameters
 #' prmm <- 3
 #' min.len <- 180
-#' # The expected window for primer sequences will depend on the presence of
+#' # The expected window for template specific primer sequences will depend on the presence of
 #' # adapters, MID sequences and/or M13 primer.
 #' target.st <- 1
 #' target.end <- 100
@@ -110,11 +109,19 @@ primers$FW.tpos <- primers$FW.pos+nchar(primers$Primer.FW)
 primers$RV.tpos <- primers$RV.pos-nchar(primers$Primer.RV)
 
 ### Inicialitzacions
-# Calcula el nº de mostres (files del fitxer samples) i fa el doble
-Ns <- nrow(samples)*2
+# Calcula el nº de mostres (files del fitxer samples)
+Ns <- nrow(samples)
 # Genera una matriu amb el doble de files que el total de mostres i 4 columnes
 # Asigna el nom a les columnes de la matriu on s'aniran afegint els resultats
-pr.res <- matrix(0,nrow=Ns,ncol=4,dimnames=list(NULL,c("Tot.reads","matches","shorts","fn.reads")))
+pr.res <- data.frame(Pat.ID=samples$Patient.ID, MID=samples$MID,
+           Ampl.ID=samples$Primer.ID, Tot.reads=integer(Ns),
+           Shorts=integer(Ns),
+           FW.match=integer(Ns), RV.match=integer(Ns),
+           FW.fn.match=integer(Ns), RV.fn.match=integer(Ns),
+           Fn.reads=integer(Ns))
+
+# Fa el doble del total de mostres
+Ns <- Ns*2
 
 # Genera un data frame amb el doble de files que el total de mostres i 9 columnes amb els noms dels arguments
 # 'character()' aplicat sobre un nombre enter retorna tants caràcters buits com el nº indiqui
@@ -171,40 +178,21 @@ if(any(FlTbl$Pr.ID==0)) {
   fl <- FlTbl$Pr.ID>0
   # Guarda totes les entrades de la taula que compleixin la condició anterior (en aquest cas totes)
   FlTbl <- FlTbl[fl,]
-  # Guarda també les entrades de la taula amb els nº de reads que compleixen la primera condició
-  pr.res <- pr.res[fl,]
 }
-# # Guarda tots els identificadors dels pacients concatenas amb la regió del HBV avaluada
-# anms <- paste(FlTbl$Pat.ID,FlTbl$Ampl.Nm,sep=".")
-# # Assigna a la taula de mostres (variable samples) els noms de les files, que corresponen de nou als
-# # identificadors dels pacients amb la regió avaluada (tot i que en aquest cas extrau les dades de la taula de mostres)
-# rownames(samples) <- paste(samples$Patient.ID,samples$Primer.ID,sep=".")
 
 ### Gràfics de resultats
 # Generació de les paletes de colors
 pal1 <- brewer.pal(8,"Dark2")
 pal2 <- brewer.pal(8,"Pastel2")
 
-# Guarda en dues variables diferents les entrades de la taula de resultats corresponents a les cadenes forward i reverse
-fw.idx <- which(FlTbl$Str=="fw")
-rv.idx <- which(FlTbl$Str=="rv")
-# Genera un data frame amb dades de les dues taules de resultats que inclou, només per les cadenes forward:
-# ID dels pacients, regió amplificada, total de reads de la mostra, reads eliminats per longitud curta,
-# reads associats a cadascuna de les dues cadenes (per separat) i sumatori del total de reads en el MID avaluat (mostra) que s'han assignat
-mres <- data.frame(PatID=FlTbl$Pat.ID[fw.idx],
-                     PrimerID=FlTbl$Ampl.Nm[fw.idx],
-                     Treads=pr.res[fw.idx,1],
-                     Shorts=pr.res[fw.idx,3]+pr.res[rv.idx,3],
-                     FW.match=pr.res[fw.idx,4],
-                     RV.match=pr.res[rv.idx,4],
-                     Fn.reads=pr.res[fw.idx,4]+pr.res[rv.idx,4],
-                     stringsAsFactors=FALSE)
+# Assigna la taula de resultats a una nova variable
+mres <- pr.res
 
 # Calcula el sumatori dels reads assignats a cadena forward o reverse en funció dels pacients, és a dir,
 # suma els reads assignats per a les dues regions del HBV avaluades
 # 'tapply()' calcula el sumatori (sum) del nº reads segons els pacients
-T.reads <- apply(mres[,5:6],2, function(x)
-  tapply(x,mres$PatID,sum))
+T.reads <- apply(mres[,c('FW.fn.match','RV.fn.match')],2, function(x)
+  tapply(x,mres$Pat.ID,sum))
 
 # Aquest condicional només s'aplica si a la taula només hi ha un sol pacient
 if(length(unique(mres$PatID))==1)
@@ -231,7 +219,7 @@ title(main="Primer matches by patient (# reads)")
 
 # Genera un altre gràfic amb les mateixes dades, però aquest cop es representen dues barres per pacient, una per
 # cada cadena forward o reverse, i diferenciant les dues regions del HBV avaluades
-res.mat <- mres[,5:6]
+res.mat <- mres[,c('FW.fn.match','RV.fn.match')]
 ymx <- max(res.mat)*1.2
 # També es defineixen els noms de l'eix X com el ID dels pacients i la regió HBV avaluada
 nms <- paste(mres$PatID,mres$PrimerID)
