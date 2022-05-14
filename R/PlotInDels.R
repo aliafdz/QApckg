@@ -18,6 +18,7 @@
 #'
 #' @import stringr
 #' @import Biostrings
+#' @export
 #' @examples
 #' ## Execute demultiplexing by primer
 #' splitDir <- "./splits"

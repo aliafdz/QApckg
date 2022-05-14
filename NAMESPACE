@@ -3,6 +3,7 @@
 export(ConsHaplotypes)
 export(FiltbyQ30)
 export(GblYield)
+export(PlotInDels)
 export(PoolQCbyPos)
 export(PoolQCbyRead)
 export(QCplot)
