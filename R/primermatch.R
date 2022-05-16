@@ -34,7 +34,8 @@ primermatch <- function(j,idx,flnms,pool){
   seqs <- readDNAStringSet(flnms)
 
   # Guarda el nº total de reads abans de demultiplexar per primers
-  pr.res$Tot.reads[jj] <- length(seqs)
+  totalseqs <- length(seqs)
+  pr.res$Tot.reads[jj] <- totalseqs
 
   # Afegeix el total de reads del fitxer del MID concret al total del pool al qual correspon
   PoolTbl[pool,1] <- PoolTbl[pool,1] + length(seqs)
@@ -73,6 +74,9 @@ primermatch <- function(j,idx,flnms,pool){
   flags <- elementNROWS(up.matches)>=1
   # Variable buida de nombre enter
   #nr <- integer()
+
+  # Guarda els resultats del coincidències amb el primer FW
+  pr.res$FW.match[jj] <- sum(flags)
 
   # Genera un fitxer .fna, el nom del qual està format per l'ID del pacient, la regió (amplicó) avaluada,
   # i la consecució PrFW.fna (primer forward), que es guarda a la carpeta trim

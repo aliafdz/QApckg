@@ -133,7 +133,7 @@ s<- mclapply.hack(c(1:length(snms)),function(i){
     filt.rds <- filt.rds+length(sqq)
 
     # Genera el fitxer amb extensió fastq que es guardarà a flashFilt
-    #writeFastq(sqq,oflnms[i],mode,compress=TRUE)
+    writeFastq(sqq,oflnms[i],mode,compress=TRUE)
     # Canvia la variable mode perquè a la propera iteració es guardin les noves
     # seqüències filtrades en el mateix fastq sense generar un de nou
     mode <- "a"

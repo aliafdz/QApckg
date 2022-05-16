@@ -119,7 +119,8 @@ filtres <- filtres[p.nms,]
 # reads restants després del demultiplexat per MIDS (total per cada pool),
 # reads restants després del demultiplexat per primers
 gbly <- data.frame(raw=filtres[,"Raw"],flash=filtres[,"Extended"],fQ30=filtres[,"FiltQ30"],
-              MID=PoolTbl[p.nms,"MIDReads"],primer= PoolTbl[p.nms,"PrimerReads"])
+              MID=PoolTbl[p.nms,"MIDReads"],primer= PoolTbl[p.nms,"PrimerReads"],
+              row.names = p.nms)
 
 # Guarda el noms dels pools corresponents a cada mostra (?
 # which(samples$Patient.ID==int.res$Pat.ID[i] & samples$Primer.ID==int.res$Ampl.Nm[i])[1]

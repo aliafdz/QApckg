@@ -29,7 +29,8 @@ Depends:
     stringr,
     foreach,
     QSutils,
-    muscle
+    muscle,
+    parallel
 Suggests: 
     knitr,
     rmarkdown,
