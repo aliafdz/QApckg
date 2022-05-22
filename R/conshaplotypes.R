@@ -14,6 +14,8 @@
 #'   and \code{poolTable} data frames.
 #' @param thr Threshold to filter haplotypes at minimum abundance before multiple alignment.
 #' @param min.seq.len Threshold to filter haplotypes at minimum length before intersection.
+#' @param max.difs Maximum number of mismatches allowed in resulting consensus haplotypes with
+#'   respect to the dominant one.
 #'
 #' @return The function returns a \code{\link{data.frame}} object containing the intersection results
 #'   for each combination of patient and amplicon region, including the initial number of reads, filtered out reads
@@ -65,7 +67,7 @@
 #' @export
 #' @author Alicia Aranda
 
-ConsHaplotypes <- function(trimfiles,pm.res,thr=0.2, min.seq.len=150){
+ConsHaplotypes <- function(trimfiles,pm.res,thr=0.2, min.seq.len=150,max.difs=250){
   # Si la ruta on es troben els fitxers de la carpeta trim no està ben especificada, intenta buscar la
   # ruta correcta a partir del directori de treball
   # Si tot i així no troba fitxers, atura l'execució i mostra un missatge d'error
@@ -241,7 +243,7 @@ foreach(i=c(1:n)) %do% {
   lst <- ReadAmplSeqs(ma.flnms[i])
   # Guarda el vector que inclou el nº de seqüències dels haplotips
   nr <- lst$nr
-  # Guarda les seqüències dels haplotips amb més reads del mínim permès (per defecte a la funció mnr=2)
+  # Guarda les seqüències dels haplotips amb més reads del mínim permès
   ma_seqs <- lst$hseqs
 
 
@@ -340,12 +342,9 @@ foreach(i=c(1:n)) %do% {
   title(main="Intersected haplotypes barplot",line=0.5,cex.main=1)
   title(sub=tt,line=0.5,cex.main=1)
 
-  ### Suma de reads de cada haplotip coincident en FW i RV
-  rds <- lstI$pFW[fl]+lstI$pRV[fl]
-
-  ### Aplica la funció local del principi per guardar els haplotips coincidents en ambdues cadenes
+  ### Aplica la funció del mateix paquet per guardar els haplotips coincidents en ambdues cadenes
   # amb les seves freqüències en els fitxers MACHpl02
-  s<-SaveHaplotypes(out.flnms[i],as.character(hseqs),nr=(lstI$pFW[fl]+lstI$pRV[fl]))
+  s<-SaveHaplotypes(out.flnms[i],as.character(hseqs),nr=nr,max.difs=max.difs)
 
   }
 

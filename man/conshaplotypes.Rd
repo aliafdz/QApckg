@@ -4,7 +4,7 @@
 \alias{ConsHaplotypes}
 \title{Generate consensus haplotypes}
 \usage{
-ConsHaplotypes(trimfiles, pm.res, thr = 0.2, min.seq.len = 150)
+ConsHaplotypes(trimfiles, pm.res, thr = 0.2, min.seq.len = 150, max.difs = 250)
 }
 \arguments{
 \item{trimfiles}{Vector including the paths of demultiplexed files by specific primer, with fna extension.}
@@ -15,6 +15,9 @@ and \code{poolTable} data frames.}
 \item{thr}{Threshold to filter haplotypes at minimum abundance before multiple alignment.}
 
 \item{min.seq.len}{Threshold to filter haplotypes at minimum length before intersection.}
+
+\item{max.difs}{Maximum number of mismatches allowed in resulting consensus haplotypes with
+respect to the dominant one.}
 }
 \value{
 The function returns a \code{\link{data.frame}} object containing the intersection results
