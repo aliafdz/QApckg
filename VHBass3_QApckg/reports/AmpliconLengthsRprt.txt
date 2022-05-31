@@ -1,0 +1,268 @@
+
+
+Pool VHBASS35X   MID 15   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  355   356   357 
+   10   150 15805 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  356   357 
+  203 18592 
+
+
+Pool VHBASS35X   MID 16   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  259   355   356   357 
+   19    11   114 12354 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  259   267   355   356   357 
+   10    13    11   133 13457 
+
+
+Pool VHBASS35X   MID 17   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  356   357   358 
+  339 15404    17 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  355   356   357 
+   16   438 18510 
+
+
+Pool VHBASS35X   MID 18   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+ 356  357 
+ 153 5785 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 356  357 
+  58 6097 
+
+
+Pool VHBASS35X   MID 19   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  231   356   357 
+   21   117 14262 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  231   356   357   358 
+   33   112 15098    13 
+
+
+Pool VHBASS35X   MID 20   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+ 356  357 
+  63 8591 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 356  357 
+  92 9599 
+
+
+Pool VHBASS35X   MID 21   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  355   356   357 
+   10    38 10166 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  333   355   356   357   358 
+   16    11    76 13501    10 
+
+
+Pool VHBASS35X   MID 22   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+ 356  357 
+  21 5176 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 356  357 
+  35 6799 
+
+
+Pool VHBASS35X   MID 23   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  356   357 
+  123 17224 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  356   357   358 
+  172 19856    23 
+
+
+Pool VHBASS35X   MID 24   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+ 356  357 
+  20 3085 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 356  357 
+  43 4107 
+
+
+Pool VHBASS35X   MID 25   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+ 356  357 
+  11 1511 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 356  357 
+  11 1977 
+
+
+Pool VHBASS35X   MID 26   Ampl HBV.1234.1631
+
+Forward seqs, table of read lengths (over 10 rd)
+  356   357 
+   93 11247 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  356   357 
+   92 12231 
+
+
+Pool VHBASS3PRES1   MID 28   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  248  338  383  401  410  412  413  414  416  419  430  431  434 
+  20   11   13  137   83   85   54  182 9598   22   19  243   16  642   91 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 203  221  233  338  383  401  410  412  413  414  416  419  431  434 
+  16   50   11  124  262  222   53  164 6890   14   75 1101  367   82 
+
+
+Pool VHBASS3PRES1   MID 2   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  251  401  410  413  431  433  434 
+  73   18   56  412   25   51   42  103 5101 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  233  251  401  410  413  431  433  434 
+  54   23   15  112   17   27   75   71 5056 
+
+
+Pool VHBASS3PRES1   MID 3   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+  202   203   206   219   220   221   222   232   233   236   250   251   401   410   413   416   431 
+   22   689    59    15   813 45737    30    58  4164    22    21  1231   161    70    64    26    47 
+  434 
+ 2208 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  202   203   206   218   219   220   221   222   232   233   236   250   251   401   410   413   431 
+   22  1434    45    33    41   265 43392    30    48  3867    19    21  4284   115    38    54    46 
+  433   434 
+   10   674 
+
+
+Pool VHBASS3PRES1   MID 4   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  251  305  401  410  413  416  431  433  434 
+ 747   13   38   99   66   13   67   18   42  242 9611 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  233  251  305  401  410  413  416  431  432  433  434 
+  59   22   12  150  823   20   12   17   60   11  186 8916 
+
+
+Pool VHBASS3PRES1   MID 5   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  323  380  383  400  401  410  413  431  434 
+1504   10   23   16   14   91 7904   32   45   27   95 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  221   251   323   400   401   402   410   413   431   434 
+   65    10    33   151 10300    10    16    52    74   155 
+
+
+Pool VHBASS3PRES1   MID 6   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  249  250  251  401  410  413  431  433  434  435 
+  54   10   50   18  657  132   16   75   71  128 9614   25 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  224  233  251  350  401  410  413  431  433  434 
+  32   11   10  421   15  117   20   20   67  138 9776 
+
+
+Pool VHBASS3PRES1   MID 7   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+  221   233   401   408   409   410   411   413   431   434 
+   39    17   120    10   204 14135    57    97   296   171 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  221   233   380   401   407   408   409   410   411   413   431   434 
+   33    15    52    65    24    21   303 13832    30   133    65   119 
+
+
+Pool VHBASS3PRES1   MID 8   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  251  281  305  401  410  413  416  431  433  434  435 
+  92   23  214   47   33  128   14   60   12   40   93 7927   12 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  233  251  305  401  410  413  419  431  432  433  434 
+ 124   26   51   14  154   31   34   11  104  128   95 8257 
+
+
+Pool VHBASS3PRES1   MID 29   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+  221   380   399   400   401   402   410   413   431   434 
+   18    10    19   136 11170    10    40    17    21   240 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  400  401  402  410  413  431  434 
+  24  152 9749   29   18   20   75  136 
+
+
+Pool VHBASS3PRES1   MID 30   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 203  221  401  410  413  430  431  434 
+  39   19  900   58   39  797 4280   54 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  233  401  410  413  430  431  434 
+  30   24  678   17   14  286 3610   89 
+
+
+Pool VHBASS3PRES1   MID 31   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+ 221  233  401  410  413  429  430  431  432  434 
+  22   15   66   73   59  281  209 8470   14  123 
+
+Reverse seqs, table of read lengths (over 10 rd)
+ 221  401  410  413  430  431  434 
+  18  105  123   25  156 8383  152 
+
+
+Pool VHBASS3PRES1   MID 14   Ampl HBV.2822.3296
+
+Forward seqs, table of read lengths (over 10 rd)
+  221   233   251   401   410   413   431   433   434   435 
+  270    17    47    64    40    42    35   296 10329    87 
+
+Reverse seqs, table of read lengths (over 10 rd)
+  221   233   251   323   401   410   413   431   433   434   435 
+   69    12    23    12    87    12    17    41   162 10828    77 

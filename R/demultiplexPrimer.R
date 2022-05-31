@@ -59,7 +59,7 @@
 #' # Get data
 #' samples <- read.table("./data/samples.csv", sep="\t", header=T,
 #'                       colClasses="character",stringsAsFactors=F)
-#' mids <- read.table("./data/mids.csv", sep="\t", header=T,
+#' primers <- read.table("./data/primers.csv", sep="\t", header=T,
 #'                    stringsAsFactors=F)
 #' pm.res <- demultiplexPrimer(splitfiles,samples,primers,prmm,min.len,target.st,target.end)
 #' @author Alicia Aranda
@@ -222,7 +222,7 @@ title(main="Primer matches by patient (# reads)")
 res.mat <- mres[,c('FW.fn.match','RV.fn.match')]
 ymx <- max(res.mat)*1.2
 # També es defineixen els noms de l'eix X com el ID dels pacients i la regió HBV avaluada
-nms <- paste(mres$PatID,mres$PrimerID)
+nms <- paste(mres$Pat.ID,mres$Ampl.ID)
 bp <- barplot(t(res.mat),beside=TRUE,border=pal1[1:2],col=pal2[1:2],
               ylim=c(0,ymx),xaxt="n")
 axis(side=1,at=apply(bp,2,mean),nms,cex.axis=0.6,las=2)

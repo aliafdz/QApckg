@@ -76,7 +76,7 @@ splitfiles <- list.files(splitDir,recursive=TRUE,full.names=TRUE,include.dirs=TR
 # Get data
 samples <- read.table("./data/samples.csv", sep="\t", header=T,
                       colClasses="character",stringsAsFactors=F)
-mids <- read.table("./data/mids.csv", sep="\t", header=T,
+primers <- read.table("./data/primers.csv", sep="\t", header=T,
                    stringsAsFactors=F)
 pm.res <- demultiplexPrimer(splitfiles,samples,primers,prmm,min.len,target.st,target.end)
 }

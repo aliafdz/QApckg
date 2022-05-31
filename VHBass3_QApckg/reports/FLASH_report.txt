@@ -1,0 +1,11 @@
+
+Extending Illumina reads by FLASH
+
+FLASH parameters:
+    Minimum overlap: 20
+    Maximum overlap: 300
+        Error level: 0.1 
+
+                Extended NoExtd Yield
+VHBASS35X_S2      841939 176119  82.7
+VHBASS3PRES1_S1   936326 244303  79.3

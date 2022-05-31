@@ -1,0 +1,24 @@
+
+   Global yield by analysis step
+===================================
+
+In number of reads:
+
+                 raw   flash    fQ30    MID primer   filt   ints
+VHBASS35X    1018058  841939  635783 334067 263647 263647 175135
+VHBASS3PRES1 1180629  936326  649631 405959 327642 327642 190659
+TOTAL        2198687 1778265 1285414 740026 591289 591289 365794
+
+In percentage by step:
+
+             flash  fQ30   MID primer filt  ints
+VHBASS35X    82.70 75.51 52.54  78.92  100 66.43
+VHBASS3PRES1 79.31 69.38 62.49  80.71  100 58.19
+TOTAL        80.88 72.28 57.57  79.90  100 61.86
+
+In percentage referred to raw reads:
+
+             raw flash  fQ30   MID primer  filt  ints
+VHBASS35X    100 82.70 62.45 32.81  25.90 25.90 17.20
+VHBASS3PRES1 100 79.31 55.02 34.38  27.75 27.75 16.15
+TOTAL        100 80.88 58.46 33.66  26.89 26.89 16.64
